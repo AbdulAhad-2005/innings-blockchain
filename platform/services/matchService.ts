@@ -1,6 +1,7 @@
-import { connectDB } from "../lib/db";
-import Match, { IMatch } from "../models/Match";
-import Team from "../models/Team";
+import { connectDB } from "@/lib/db";
+import Match, { IMatch } from "@/models/Match";
+import Team from "@/models/Team";
+import { formatImageUrl } from "@/lib/utils";
 
 export interface CreateMatchPayload {
   teamA: string;
@@ -68,17 +69,30 @@ export async function createMatch(data: CreateMatchPayload): Promise<IMatch> {
 
 export async function getAllMatches(): Promise<IMatch[]> {
   await connectDB();
-  return await Match.find()
+  const matches = await Match.find()
     .populate("teamA", "name abbreviation logoUrl")
     .populate("teamB", "name abbreviation logoUrl")
     .sort({ startTime: 1 });
+
+  return matches.map(m => {
+    const obj = m.toObject();
+    if (obj.teamA) obj.teamA.logoUrl = formatImageUrl(obj.teamA.logoUrl);
+    if (obj.teamB) obj.teamB.logoUrl = formatImageUrl(obj.teamB.logoUrl);
+    return obj;
+  });
 }
 
 export async function getMatchById(id: string): Promise<IMatch | null> {
   await connectDB();
-  return await Match.findById(id)
+  const match = await Match.findById(id)
     .populate("teamA", "name abbreviation logoUrl")
     .populate("teamB", "name abbreviation logoUrl");
+  
+  if (!match) return null;
+  const obj = match.toObject();
+  if (obj.teamA) obj.teamA.logoUrl = formatImageUrl(obj.teamA.logoUrl);
+  if (obj.teamB) obj.teamB.logoUrl = formatImageUrl(obj.teamB.logoUrl);
+  return obj;
 }
 
 export async function updateMatch(id: string, data: Partial<CreateMatchPayload>): Promise<IMatch | null> {

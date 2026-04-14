@@ -4,11 +4,11 @@
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { connectDB } from "../lib/db";
-import AdminUser from "../models/AdminUser";
-import BrandUser from "../models/BrandUser";
-import CustomerUser from "../models/CustomerUser";
-import { JWTPayload, UserRole } from "../lib/authMiddleware";
+import { connectDB } from "@/lib/db";
+import AdminUser from "@/models/AdminUser";
+import BrandUser from "@/models/BrandUser";
+import CustomerUser from "@/models/CustomerUser";
+import { JWTPayload, UserRole } from "@/lib/authMiddleware";
 
 const SALT_ROUNDS = 12;
 const TOKEN_EXPIRY = "7d";

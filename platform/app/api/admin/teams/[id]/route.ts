@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAdmin } from "../../../../../lib/authMiddleware";
-import { getTeamById, updateTeam, deleteTeam } from "../../../../../services/teamService";
+import { verifyAdmin } from "@/lib/authMiddleware";
+import { getTeamById, updateTeam, deleteTeam } from "@/services/teamService";
 
 /**
  * @swagger
