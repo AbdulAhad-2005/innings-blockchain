@@ -1,70 +1,9 @@
 import mongoose from "mongoose";
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
-import { connectDB } from "../lib/db";
-import Reward, { IReward } from "../models/Reward";
-import { JWTPayload } from "../lib/authMiddleware";
-import { formatImageUrl } from "../lib/utils";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "rewards");
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Ensures the upload directory exists.
- */
-async function ensureUploadDir() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (err) {
-    if ((err as any).code !== "EEXIST") throw err;
-  }
-}
-
-/**
- * Saves an uploaded file to the static uploads folder with a hashed filename.
- * Returns the public URL path.
- */
-async function saveFile(file: File): Promise<string> {
-  await ensureUploadDir();
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  
-  // Generate a distinct hash based on content and original name
-  const hash = crypto.createHash("sha256")
-    .update(buffer)
-    .update(file.name)
-    .update(Date.now().toString())
-    .digest("hex")
-    .substring(0, 16);
-
-  const ext = path.extname(file.name) || ".png";
-  const filename = `${hash}${ext}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-
-  await fs.writeFile(filepath, buffer);
-
-  return `/uploads/rewards/${filename}`;
-}
-
-/**
- * Deletes a file from the uploads folder.
- */
-async function deleteFile(imageUrl: string) {
-  if (!imageUrl.startsWith("/uploads/rewards/")) return;
-
-  const filename = path.basename(imageUrl);
-  const filepath = path.join(UPLOAD_DIR, filename);
-
-  try {
-    await fs.unlink(filepath);
-  } catch (err) {
-    console.error(`Failed to delete file: ${filepath}`, err);
-  }
-}
+import { saveFile, deleteFile } from "@/lib/storage";
+import { connectDB } from "@/lib/db";
+import Reward, { IReward } from "@/models/Reward";
+import { JWTPayload } from "@/lib/authMiddleware";
+import { formatImageUrl } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Business Logic
@@ -83,7 +22,7 @@ export async function createReward(data: RewardCreatePayload, user: JWTPayload):
 
   let imageUrl = "";
   if (data.image) {
-    imageUrl = await saveFile(data.image);
+    imageUrl = await saveFile(data.image, "rewards");
   }
 
   // Map JWT role to Mongoose model name for refPath
@@ -152,7 +91,7 @@ export async function updateReward(id: string, data: Partial<RewardCreatePayload
     if (reward.imageUrl) {
       await deleteFile(reward.imageUrl);
     }
-    updateData.imageUrl = await saveFile(data.image);
+    updateData.imageUrl = await saveFile(data.image, "rewards");
     delete updateData.image;
   }
 

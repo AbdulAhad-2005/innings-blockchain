@@ -1,7 +1,7 @@
-import { connectDB } from "../lib/db";
-import Match, { IMatch } from "../models/Match";
-import Team from "../models/Team";
-import { formatImageUrl } from "../lib/utils";
+import { connectDB } from "@/lib/db";
+import Match, { IMatch } from "@/models/Match";
+import Team from "@/models/Team";
+import { formatImageUrl } from "@/lib/utils";
 
 export interface CreateMatchPayload {
   teamA: string;

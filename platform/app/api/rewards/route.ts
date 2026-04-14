@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "../../../lib/authMiddleware";
-import { createReward, getRewards } from "../../../services/rewardService";
+import { verifyToken } from "@/lib/authMiddleware";
+import { createReward, getRewards } from "@/services/rewardService";
 
 /**
  * @swagger

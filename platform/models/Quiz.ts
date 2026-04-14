@@ -4,9 +4,10 @@ export interface IQuiz extends Document {
   matchId: mongoose.Types.ObjectId;
   brandId: mongoose.Types.ObjectId;
   budget: number;
+  adImages: string[];
   startTime: Date;
   endTime: Date;
-  status: string;
+  status: "bid_pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,9 +16,10 @@ const QuizSchema: Schema = new Schema({
   matchId: { type: Schema.Types.ObjectId, ref: "Match", required: true },
   brandId: { type: Schema.Types.ObjectId, ref: "BrandUser", required: true },
   budget: { type: Number, required: true },
+  adImages: { type: [String], default: [] },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
-  status: { type: String, required: true, default: "draft" },
+  status: { type: String, required: true, enum: ["bid_pending", "approved", "rejected"], default: "bid_pending" },
 }, { timestamps: true });
 
 export default mongoose.models.Quiz || mongoose.model<IQuiz>("Quiz", QuizSchema);
