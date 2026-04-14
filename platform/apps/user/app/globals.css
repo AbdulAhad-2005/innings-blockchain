@@ -76,11 +76,38 @@ body {
     linear-gradient(180deg, #0b1714 0%, #081411 52%, #07100e 100%);
   color: white;
   font-family: var(--font-body), sans-serif;
+  perspective: 1200px;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button,
+a,
+[role="button"],
+[data-slot="button"] {
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    background-color 220ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    border-color 220ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    color 220ms cubic-bezier(0.2, 0.65, 0.2, 1);
+}
+
+button:hover,
+a:hover,
+[role="button"]:hover,
+[data-slot="button"]:hover {
+  transform: translateY(-2px);
+}
+
+button:active,
+a:active,
+[role="button"]:active,
+[data-slot="button"]:active {
+  transform: translateY(0);
 }
 
 .font-display {
@@ -95,11 +122,88 @@ a {
   pointer-events: none;
 }
 
+.interactive-smooth a {
+  position: relative;
+}
+
+.interactive-smooth a::after {
+  position: absolute;
+  bottom: -0.3rem;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-gold-soft);
+  content: "";
+  transition: width 220ms cubic-bezier(0.2, 0.65, 0.2, 1);
+}
+
+.interactive-smooth a:hover::after {
+  width: 100%;
+}
+
 .glass-panel {
   border: 1px solid var(--color-border);
   background: linear-gradient(180deg, rgba(14, 28, 24, 0.82), rgba(7, 16, 14, 0.7));
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-panel);
+}
+
+.neo-panel {
+  border: 2px solid rgba(240, 208, 128, 0.35);
+  box-shadow:
+    0 14px 0 rgba(8, 20, 17, 0.5),
+    0 24px 90px rgba(2, 8, 7, 0.4);
+}
+
+.neo-hero {
+  transform-style: preserve-3d;
+  animation: float-hero 5.5s ease-in-out infinite;
+}
+
+.neo-tile {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 0 rgba(8, 20, 17, 0.55);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    box-shadow 260ms cubic-bezier(0.2, 0.65, 0.2, 1),
+    border-color 260ms cubic-bezier(0.2, 0.65, 0.2, 1);
+}
+
+.neo-tile:hover {
+  transform: translateY(-4px) rotateX(4deg) rotateY(-4deg);
+  border-color: rgba(240, 208, 128, 0.5);
+  box-shadow:
+    0 14px 0 rgba(8, 20, 17, 0.55),
+    0 24px 80px rgba(2, 8, 7, 0.42);
+}
+
+.neo-button {
+  border: 2px solid rgba(10, 20, 17, 0.3);
+  box-shadow: 0 5px 0 rgba(8, 20, 17, 0.6);
+}
+
+.neo-outline {
+  border: 2px solid rgba(240, 208, 128, 0.32);
+  box-shadow: 0 5px 0 rgba(8, 20, 17, 0.5);
+}
+
+.neo-button:hover,
+.neo-outline:hover {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.neo-button:active,
+.neo-outline:active {
+  transform: translateY(1px) scale(0.995);
+  box-shadow: 0 2px 0 rgba(8, 20, 17, 0.5);
+}
+
+.perspective-zone {
+  perspective: 1400px;
+}
+
+.tilt-card {
+  transform-style: preserve-3d;
 }
 
 .pitch-grid {
@@ -272,6 +376,27 @@ a {
   animation: fade-rise 480ms ease both;
 }
 
+.shimmer-surface {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-surface::before {
+  position: absolute;
+  inset: -35%;
+  background: conic-gradient(
+    from 180deg,
+    transparent,
+    rgba(240, 208, 128, 0.12),
+    transparent,
+    rgba(32, 112, 176, 0.1),
+    transparent
+  );
+  animation: rotate-shimmer 9s linear infinite;
+  content: "";
+  pointer-events: none;
+}
+
 .delay-1 {
   animation-delay: 70ms;
 }
@@ -292,5 +417,32 @@ a {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes float-hero {
+  0%,
+  100% {
+    transform: translateY(0) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotateX(3deg) rotateY(-3deg);
+  }
+}
+
+@keyframes rotate-shimmer {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }

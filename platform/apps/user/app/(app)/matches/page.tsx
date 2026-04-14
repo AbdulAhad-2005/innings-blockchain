@@ -12,7 +12,7 @@ const cards = [
 export default function MatchesPage() {
   return (
     <main className="grid gap-6">
-      <Card className="glass-panel fade-rise rounded-[2rem] border-white/10 bg-white/5 p-7">
+      <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5 p-7">
         <CardHeader>
           <Badge variant="secondary">Matches</Badge>
           <CardTitle className="section-title">Fixture-first discovery</CardTitle>
@@ -25,7 +25,7 @@ export default function MatchesPage() {
         {cards.map((card) => (
           <Card
             key={card.title}
-            className="shell-card border-white/10 bg-white/5"
+            className="shell-card neo-panel neo-tile tilt-card border-white/10 bg-white/5"
           >
             <CardHeader>
               <Badge variant="outline">Featured</Badge>
@@ -37,7 +37,7 @@ export default function MatchesPage() {
               <CardDescription className="text-sm leading-7 text-white/72">
                 {card.meta}
               </CardDescription>
-              <Button variant="secondary" className="mt-4 w-full">
+              <Button variant="secondary" className="neo-button mt-4 w-full">
                 View Campaign
               </Button>
             </CardContent>

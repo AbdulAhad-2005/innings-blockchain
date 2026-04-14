@@ -1,33 +1,46 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Sparkles, Trophy, Zap } from "lucide-react";
 
-const pillars = [
+const highlights = [
   {
-    title: "Matchday Missions",
-    description:
-      "Guide users from marquee fixtures into curated prediction and quiz journeys with a strong sports-broadcast feel.",
+    title: "Live Match Pulse",
+    description: "Jump into active moments with one tap.",
+    icon: Zap,
   },
   {
-    title: "Reward Moments",
-    description:
-      "Turn participation into a premium reward loop with milestone unlocks, streak nudges, and claim-ready summaries.",
+    title: "Reward Ladder",
+    description: "Track tiers, streaks, and instant claim states.",
+    icon: Trophy,
   },
   {
-    title: "Premium Motion",
-    description:
-      "Use layered gradients, sharp typography, card depth, and measured animation instead of generic web3 tropes.",
+    title: "Cinematic Motion",
+    description: "Fast transitions with playful depth.",
+    icon: Sparkles,
   },
 ];
 
-const flows = [
-  "Landing and conversion",
-  "Email/password auth",
-  "Personalized match hub",
-  "Quiz gameplay and results",
-  "Rewards progression experience",
-  "Profile, activity, and settings",
+const quickFlows = [
+  "Login",
+  "Pick a match",
+  "Play quiz",
+  "Unlock rewards",
 ];
 
 export default function Home() {
@@ -35,70 +48,73 @@ export default function Home() {
     <main className="relative overflow-hidden">
       <div className="spotlight absolute inset-x-0 top-0 h-[36rem]" />
       <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 pb-16 pt-6 sm:px-10 lg:px-12">
-        <header className="glass-panel mb-10 flex items-center justify-between px-5 py-4">
+        <header className="glass-panel neo-panel mb-10 flex items-center justify-between px-5 py-4">
           <div>
             <Badge variant="secondary" className="font-display text-xs uppercase tracking-[0.42em]">
               Innings Blockchain
             </Badge>
-            <p className="mt-1 text-sm text-white/68">
-              Sporty, energetic, premium user app
-            </p>
+            <p className="mt-1 text-sm text-white/68">Fan-first gameplay</p>
           </div>
-          <nav className="hidden items-center gap-6 text-sm text-white/72 md:flex">
-            <a href="#product">Product</a>
-            <a href="#flows">Flows</a>
-            <a href="#build">Build Scope</a>
+          <nav className="hidden items-center gap-6 text-sm text-white/72 md:flex interactive-smooth">
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <a href="#product">Product</a>
+              </HoverCardTrigger>
+              <HoverCardContent>Core fan journey and signature look.</HoverCardContent>
+            </HoverCard>
+            <a href="#flows">Flow</a>
+            <a href="#build">Build</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link className="text-sm text-white/72 transition hover:text-white" href="/login">
               Login
             </Link>
             <Link href="/signup">
-              <Button>Join Beta</Button>
+              <Button className="neo-button">Join Beta</Button>
             </Link>
           </div>
         </header>
 
         <section className="grid flex-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="relative z-10">
-            <p className="mb-5 inline-flex rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs uppercase tracking-[0.32em] text-[var(--color-lime)]">
-              Built for fans, not dashboards
-            </p>
+            <Badge className="mb-5 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.32em] text-[var(--color-lime)]">
+              Built for fans
+            </Badge>
             <h1 className="max-w-4xl font-display text-5xl uppercase tracking-[0.06em] text-white sm:text-6xl lg:text-7xl">
-              Matchday rewards with a broadcast-grade interface.
+              Matchday rewards, with bite.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
-              The user experience should feel like a premium sports companion:
-              live energy, collectible momentum, and polished progression from
-              matches to quizzes to rewards.
+            <p className="mt-6 max-w-xl text-lg leading-8 text-white/72">
+              Live matches, fast quizzes, and unlockable rewards in one polished loop.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link href="/app">
-                <Button>View User Hub</Button>
+                <Button className="neo-button">Open User Hub</Button>
               </Link>
               <Link href="/login">
-                <Button variant="outline">Explore Auth Flow</Button>
+                <Button variant="outline" className="neo-outline">
+                  Explore Auth
+                </Button>
               </Link>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <div className="metric-card">
+              <div className="metric-card neo-tile tilt-card">
                 <span className="metric-label">Launch Focus</span>
                 <strong className="metric-value">User App</strong>
               </div>
-              <div className="metric-card">
+              <div className="metric-card neo-tile tilt-card">
                 <span className="metric-label">Auth Mode</span>
                 <strong className="metric-value">Email + Password</strong>
               </div>
-              <div className="metric-card">
+              <div className="metric-card neo-tile tilt-card">
                 <span className="metric-label">Wallet UI</span>
                 <strong className="metric-value">Not Included</strong>
               </div>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative perspective-zone">
             <div className="pitch-grid absolute inset-0 rounded-[2rem] opacity-45" />
-            <Card className="glass-panel relative overflow-hidden rounded-[2rem] border-white/10 bg-white/5 p-6 shadow-[0_40px_140px_rgba(8,16,15,0.55)]">
+            <Card className="glass-panel neo-panel neo-hero relative overflow-hidden rounded-[2rem] border-white/10 bg-white/5 p-6 shadow-[0_40px_140px_rgba(8,16,15,0.55)]">
               <CardHeader>
                 <Badge variant="outline">Tonight&apos;s headliner</Badge>
                 <CardTitle className="mt-3 font-display text-3xl uppercase tracking-[0.08em] text-white">
@@ -106,30 +122,34 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Card className="feature-card sm:col-span-2">
-                    <CardHeader>
-                      <Badge>Live quiz</Badge>
-                      <CardTitle className="text-3xl font-semibold text-white">08:42</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-white/68">
-                        Time-boxed quiz modules with clear urgency.
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="feature-card">
-                    <CardHeader>
-                      <Badge>Rewards unlocked</Badge>
-                      <CardTitle className="text-3xl font-semibold text-white">12</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-white/68">
-                        Clear statuses and match-linked outcomes.
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
+                <Carousel opts={{ loop: true }} className="mx-8">
+                  <CarouselContent>
+                    <CarouselItem>
+                      <Card className="feature-card neo-tile tilt-card">
+                        <CardHeader>
+                          <Badge>Live quiz</Badge>
+                          <CardTitle className="text-3xl font-semibold text-white">08:42</CardTitle>
+                          <CardDescription className="text-white/68">
+                            Countdown running. Round starts now.
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </CarouselItem>
+                    <CarouselItem>
+                      <Card className="feature-card neo-tile tilt-card">
+                        <CardHeader>
+                          <Badge>Rewards</Badge>
+                          <CardTitle className="text-3xl font-semibold text-white">12</CardTitle>
+                          <CardDescription className="text-white/68">
+                            Fresh unlocks waiting to claim.
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </CarouselItem>
+                  </CarouselContent>
+                  <CarouselPrevious className="neo-outline" />
+                  <CarouselNext className="neo-outline" />
+                </Carousel>
               </CardContent>
             </Card>
           </div>
@@ -137,50 +157,48 @@ export default function Home() {
       </section>
 
       <section id="product" className="mx-auto w-full max-w-7xl px-6 pb-8 sm:px-10 lg:px-12">
-        <div className="section-shell">
-          <div className="max-w-2xl">
+        <div className="section-shell neo-panel">
+          <div className="max-w-xl">
             <p className="section-kicker">Product Direction</p>
-            <h2 className="section-title">
-              The experience centers on sport-first participation.
-            </h2>
-            <p className="section-copy">
-              Keep technical complexity away from user flows. The frontend
-              should feel closer to a premium sports media product than a
-              generic dashboard.
-            </p>
+            <h2 className="section-title">Sport-first participation.</h2>
+            <p className="section-copy">Fast, emotional, and crystal clear.</p>
           </div>
           <div className="mt-8 grid gap-5 lg:grid-cols-3">
-            {pillars.map((pillar) => (
-              <Card key={pillar.title} className="feature-card border-white/10 bg-white/5">
+            {highlights.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <Card
+                  key={pillar.title}
+                  className="feature-card neo-tile tilt-card border-white/10 bg-white/5"
+                >
                 <CardHeader>
-                  <Badge variant="secondary">{pillar.title}</Badge>
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 text-[var(--color-gold-soft)]" />
+                      <Badge variant="secondary">{pillar.title}</Badge>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm leading-7 text-white/74">
-                    {pillar.description}
-                  </p>
+                    <p className="text-sm leading-7 text-white/74">{pillar.description}</p>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       <section id="flows" className="mx-auto w-full max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="section-shell">
+          <div className="section-shell neo-panel">
             <p className="section-kicker">User Scope</p>
-            <h2 className="section-title">What the frontend needs to deliver.</h2>
-            <p className="section-copy">
-              The user app is not a thin shell. It is the core product surface
-              and needs a fully branded journey from conversion to repeat usage.
-            </p>
+            <h2 className="section-title">Four-step fan flow.</h2>
+            <p className="section-copy">Simple to start, hard to leave.</p>
           </div>
-          <Card className="glass-panel rounded-[2rem] border-white/10 bg-white/5 p-6">
+          <Card className="glass-panel neo-panel rounded-[2rem] border-white/10 bg-white/5 p-6">
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                {flows.map((flow, index) => (
-                  <div key={flow} className="step-card">
+                {quickFlows.map((flow, index) => (
+                  <div key={flow} className="step-card neo-tile tilt-card">
                     <span className="step-count">0{index + 1}</span>
                     <p className="mt-4 text-lg font-medium text-white">{flow}</p>
                   </div>
@@ -192,23 +210,21 @@ export default function Home() {
       </section>
 
       <section id="build" className="mx-auto w-full max-w-7xl px-6 py-8 pb-20 sm:px-10 lg:px-12">
-        <Card className="glass-panel grid gap-6 rounded-[2rem] border-white/10 bg-white/5 p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+        <Card className="glass-panel neo-panel grid gap-6 rounded-[2rem] border-white/10 bg-white/5 p-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <CardHeader>
             <Badge variant="secondary">Build Decision</Badge>
-            <CardTitle className="section-title">We start with the user app and scale into the full monorepo.</CardTitle>
+            <CardTitle className="section-title">User app first. Everything else follows.</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="section-copy">
-              The next implementation pass should initialize shadcn in the new
-              workspace, bring in premium auth and dashboard blocks, and replace
-              these handcrafted placeholders with production components.
-            </p>
+            <p className="section-copy">Ready to test the polished journey now.</p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <Link href="/app">
-                <Button>Open App Skeleton</Button>
+                <Button className="neo-button">Open User App</Button>
               </Link>
               <Link href="/matches">
-                <Button variant="outline">Review Match Flow</Button>
+                <Button variant="outline" className="neo-outline">
+                  Review Match Flow
+                </Button>
               </Link>
             </div>
           </CardContent>

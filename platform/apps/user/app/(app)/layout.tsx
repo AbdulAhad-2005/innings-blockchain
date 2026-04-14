@@ -14,7 +14,7 @@ const links = [
 export default function UserAppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto w-full max-w-7xl px-6 pb-12 pt-6 sm:px-10 lg:px-12">
-      <header className="glass-panel fade-rise mb-8 rounded-[1.5rem] px-5 py-4">
+      <header className="glass-panel neo-panel fade-rise mb-8 rounded-[1.5rem] px-5 py-4 shimmer-surface">
         <div className="flex flex-wrap items-center justify-between gap-5">
           <div className="flex items-center gap-3">
             <Badge variant="secondary" className="font-display text-xs uppercase tracking-[0.4em]">
@@ -22,10 +22,10 @@ export default function UserAppLayout({ children }: { children: ReactNode }) {
             </Badge>
             <p className="text-sm text-white/70">Sporty premium experience</p>
           </div>
-          <nav className="flex flex-wrap items-center gap-2">
+          <nav className="interactive-smooth flex flex-wrap items-center gap-2">
             {links.map((link) => (
               <Link key={link.href} href={link.href}>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="neo-outline">
                   {link.label}
                 </Button>
               </Link>

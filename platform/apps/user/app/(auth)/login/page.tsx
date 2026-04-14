@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 export default function LoginPage() {
   return (
     <main className="auth-grid md:grid-cols-[1.1fr_0.9fr]">
-      <Card className="glass-panel fade-rise rounded-[2rem] border-white/10 bg-white/5">
+      <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5">
         <CardHeader>
           <Badge variant="outline" className="w-fit">
             Welcome Back
@@ -27,7 +27,7 @@ export default function LoginPage() {
               <span className="field-label">Password</span>
               <Input type="password" placeholder="Enter your password" />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="neo-button w-full">
               Sign In
             </Button>
           </form>
@@ -42,7 +42,7 @@ export default function LoginPage() {
         </CardContent>
       </Card>
 
-      <Card className="shell-card fade-rise delay-2 border-white/10 bg-white/5">
+      <Card className="shell-card neo-panel fade-rise delay-2 border-white/10 bg-white/5">
         <CardHeader>
           <Badge variant="secondary">Tonight</Badge>
           <CardTitle className="mt-2 font-display text-4xl uppercase tracking-[0.06em] text-white">
@@ -55,9 +55,9 @@ export default function LoginPage() {
             fixture highlights and live quiz entry points.
           </p>
           <div className="mt-6 grid gap-3">
-            <Badge variant="outline">Live quiz in 06:12</Badge>
-            <Badge variant="outline">2 rewards pending</Badge>
-            <Badge variant="outline">Campaign active</Badge>
+            <Badge variant="outline" className="neo-outline">Live quiz in 06:12</Badge>
+            <Badge variant="outline" className="neo-outline">2 rewards pending</Badge>
+            <Badge variant="outline" className="neo-outline">Campaign active</Badge>
           </div>
         </CardContent>
       </Card>

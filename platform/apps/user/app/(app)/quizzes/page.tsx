@@ -11,7 +11,7 @@ const rounds = [
 export default function QuizzesPage() {
   return (
     <main className="grid gap-6">
-      <Card className="glass-panel fade-rise rounded-[2rem] border-white/10 bg-white/5 p-7">
+      <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5 p-7">
         <CardHeader>
           <Badge variant="secondary">Quizzes</Badge>
           <CardTitle className="section-title">Real-time quiz gameplay</CardTitle>
@@ -24,7 +24,7 @@ export default function QuizzesPage() {
         {rounds.map((round) => (
           <Card
             key={round.name}
-            className="shell-card border-white/10 bg-white/5"
+            className="shell-card neo-panel neo-tile tilt-card border-white/10 bg-white/5"
           >
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -41,9 +41,9 @@ export default function QuizzesPage() {
               <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/84">
                 Timer, progress, and answer interactions here.
               </div>
-              <Button 
+              <Button
                 variant={round.state === "Live" ? "default" : "secondary"} 
-                className="mt-4 w-full"
+                className="neo-button mt-4 w-full"
               >
                 {round.state === "Live" ? "Join Now" : "Set Reminder"}
               </Button>

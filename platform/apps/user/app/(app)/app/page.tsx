@@ -17,7 +17,7 @@ const fixtures = [
 export default function UserHubPage() {
   return (
     <main className="grid gap-6">
-      <Card className="glass-panel fade-rise rounded-[2rem] border-white/10 bg-white/5 p-7">
+      <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5 p-7">
         <CardHeader>
           <Badge variant="secondary">Control Center</Badge>
           <CardTitle className="section-title">Your matchday hub</CardTitle>
@@ -28,7 +28,7 @@ export default function UserHubPage() {
         <CardContent>
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
             {quickStats.map((item) => (
-              <article key={item.label} className="metric-card fade-rise">
+              <article key={item.label} className="metric-card neo-tile tilt-card fade-rise">
                 <span className="metric-label">{item.label}</span>
                 <strong className="metric-value text-2xl">{item.value}</strong>
               </article>
@@ -38,7 +38,7 @@ export default function UserHubPage() {
       </Card>
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card className="shell-card fade-rise delay-1 border-white/10 bg-white/5">
+        <Card className="shell-card neo-panel fade-rise delay-1 border-white/10 bg-white/5">
           <CardHeader>
             <Badge variant="outline">Marquee Fixtures</Badge>
           </CardHeader>
@@ -47,7 +47,7 @@ export default function UserHubPage() {
               {fixtures.map((match) => (
                 <div
                   key={match.teams}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
+                  className="neo-tile tilt-card rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
                 >
                   <p className="font-display text-2xl uppercase tracking-[0.04em] text-white">
                     {match.teams}
@@ -61,7 +61,7 @@ export default function UserHubPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="shell-card fade-rise delay-2 border-white/10 bg-white/5">
+        <Card className="shell-card neo-panel fade-rise delay-2 border-white/10 bg-white/5">
           <CardHeader>
             <Badge variant="secondary">Next Step</Badge>
             <CardTitle className="mt-3 font-display text-3xl uppercase tracking-[0.07em] text-white">
@@ -83,7 +83,7 @@ export default function UserHubPage() {
                 Last session accuracy: 84%
               </div>
             </div>
-            <Button className="mt-4 w-full">Join Quiz</Button>
+            <Button className="neo-button mt-4 w-full">Join Quiz</Button>
           </CardContent>
         </Card>
       </section>

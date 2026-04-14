@@ -11,7 +11,7 @@ const rewardCards = [
 export default function RewardsPage() {
   return (
     <main className="grid gap-6">
-      <Card className="glass-panel fade-rise rounded-[2rem] border-white/10 bg-white/5 p-7">
+      <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5 p-7">
         <CardHeader>
           <Badge variant="secondary">Rewards</Badge>
           <CardTitle className="section-title">Clean reward progression</CardTitle>
@@ -24,7 +24,7 @@ export default function RewardsPage() {
         {rewardCards.map((reward) => (
           <Card
             key={reward.title}
-            className="shell-card border-white/10 bg-white/5"
+            className="shell-card neo-panel neo-tile tilt-card border-white/10 bg-white/5"
           >
             <CardHeader>
               <Badge variant="outline">{reward.title}</Badge>
@@ -39,7 +39,7 @@ export default function RewardsPage() {
           </Card>
         ))}
       </section>
-      <Card className="shell-card fade-rise delay-3 border-white/10 bg-white/5">
+      <Card className="shell-card neo-panel fade-rise delay-3 border-white/10 bg-white/5">
         <CardHeader>
           <Badge variant="secondary">Recent Activity</Badge>
           <CardTitle className="mt-2 font-display text-3xl uppercase tracking-[0.05em] text-white">
@@ -48,13 +48,13 @@ export default function RewardsPage() {
         </CardHeader>
         <CardContent>
           <div className="mt-5 grid gap-3">
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
+            <div className="neo-tile rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
               Quiz Sprint - 35 points credited
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
+            <div className="neo-tile rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
               Campaign Completion - Bonus unlocked
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
+            <div className="neo-tile rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85">
               Weekly Streak - 14 points credited
             </div>
           </div>

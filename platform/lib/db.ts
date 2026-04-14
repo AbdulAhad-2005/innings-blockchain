@@ -7,9 +7,17 @@ export const connectDB = async () => {
     return;
   }
 
+  const mongoUri = process.env.MONGODB_URI ?? process.env.MONGODB_URL;
+
+  if (!mongoUri) {
+    throw new Error(
+      "Missing MongoDB connection string. Set MONGODB_URI (or MONGODB_URL) in your environment."
+    );
+  }
+
   try {
     console.log("Attempting to connect to MongoDB...");
-    await mongoose.connect(process.env.MONGODB_URL!);
+    await mongoose.connect(mongoUri);
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection error:", error);
