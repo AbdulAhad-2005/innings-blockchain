@@ -1,0 +1,296 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 160 20% 4%;
+    --foreground: 0 0% 100%;
+    --card: 160 20% 6%;
+    --card-foreground: 0 0% 100%;
+    --popover: 160 20% 6%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 45 65% 54%;
+    --primary-foreground: 160 20% 4%;
+    --secondary: 160 20% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 160 20% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 160 20% 14%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 160 20% 14%;
+    --input: 160 20% 14%;
+    --ring: 45 65% 54%;
+    --radius: 0.75rem;
+    --chart-1: 45 65% 54%;
+    --chart-2: 160 50% 40%;
+    --chart-3: 200 60% 45%;
+    --chart-4: 190 65% 50%;
+    --chart-5: 170 60% 40%;
+  }
+}
+
+:root {
+  --font-body:
+    "Sora", "Avenir Next", "Segoe UI", "Trebuchet MS", "Helvetica Neue",
+    sans-serif;
+  --font-display:
+    "Orbitron", "Eurostile", "Bank Gothic", "Impact", "Arial Narrow Bold",
+    sans-serif;
+  --color-ink: #081411;
+  --color-ink-soft: #0f201b;
+  --color-emerald: #105030;
+  --color-emerald-bright: #308040;
+  --color-lime: #50a050;
+  --color-gold: #e0c070;
+  --color-gold-deep: #f09030;
+  --color-gold-soft: #f0d080;
+  --color-sky: #2070b0;
+  --color-ice: #edf3ff;
+  --color-card: rgba(10, 20, 17, 0.72);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --shadow-panel: 0 24px 100px rgba(2, 8, 7, 0.42);
+}
+
+@theme inline {
+  --color-background: var(--color-ink);
+  --color-foreground: #ffffff;
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(240, 208, 128, 0.14), transparent 28%),
+    radial-gradient(circle at 20% 20%, rgba(32, 112, 176, 0.22), transparent 30%),
+    linear-gradient(180deg, #0b1714 0%, #081411 52%, #07100e 100%);
+  color: white;
+  font-family: var(--font-body), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+
+.spotlight {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(237, 243, 255, 0.22), transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(32, 112, 176, 0.16), transparent 22%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.glass-panel {
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(14, 28, 24, 0.82), rgba(7, 16, 14, 0.7));
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-panel);
+}
+
+.pitch-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-position: center;
+  background-size: 2rem 2rem;
+  mask-image: radial-gradient(circle at center, black 45%, transparent 100%);
+}
+
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.95rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.button-primary {
+  border: 1px solid rgba(240, 208, 128, 0.32);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-deep) 100%);
+  color: #0d140f;
+}
+
+.button-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.button-primary:hover,
+.button-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.metric-card,
+.feature-card,
+.step-card,
+.shell-card,
+.auth-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+}
+
+.metric-card {
+  border-radius: 1.25rem;
+  padding: 1rem;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.metric-value {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 1rem;
+  color: white;
+}
+
+.feature-card,
+.step-card,
+.auth-card {
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+}
+
+.step-count,
+.eyebrow,
+.section-kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--color-gold-soft);
+}
+
+.section-shell {
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(13, 24, 21, 0.92), rgba(9, 18, 16, 0.78));
+  padding: 2rem;
+  box-shadow: var(--shadow-panel);
+}
+
+.section-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 3vw, 3.4rem);
+  line-height: 0.98;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
+}
+
+.section-copy {
+  margin-top: 1rem;
+  max-width: 44rem;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.shell-card {
+  border-radius: 1.75rem;
+  padding: 1.25rem;
+}
+
+.auth-grid {
+  display: grid;
+  min-height: 100vh;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.field-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.95rem 1rem;
+  color: white;
+  outline: none;
+}
+
+.field-input::placeholder {
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.field-input:focus {
+  border-color: rgba(240, 208, 128, 0.5);
+  box-shadow: 0 0 0 3px rgba(240, 208, 128, 0.12);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.fade-rise {
+  animation: fade-rise 480ms ease both;
+}
+
+.delay-1 {
+  animation-delay: 70ms;
+}
+
+.delay-2 {
+  animation-delay: 140ms;
+}
+
+.delay-3 {
+  animation-delay: 210ms;
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

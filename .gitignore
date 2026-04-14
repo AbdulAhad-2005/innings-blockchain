@@ -7,7 +7,7 @@
 !/platform/.yarn/releases
 !/platform/.yarn/versions
 /platform/coverage
-/platform/.next/
+.next/
 /platform/out/
 /platform/build
 /platform/.DS_Store
@@ -30,7 +30,7 @@
 !/truffle/.yarn/releases
 !/truffle/.yarn/versions
 /truffle/coverage
-/truffle/.next/
+.next/
 /truffle/out/
 /truffle/build
 /truffle/.DS_Store
