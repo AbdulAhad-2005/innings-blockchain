@@ -1,7 +1,7 @@
 // app/api/auth/login/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { loginUser } from "../../../../services/authService";
+import { loginUser } from "@/services/authService";
 
 /**
  * @swagger

@@ -16,4 +16,6 @@ const UserAnswerSchema: Schema = new Schema({
   isCorrect: { type: Boolean, required: true },
 }, { timestamps: true });
 
+UserAnswerSchema.index({ userId: 1, questionId: 1 }, { unique: true });
+
 export default mongoose.models.UserAnswer || mongoose.model<IUserAnswer>("UserAnswer", UserAnswerSchema);

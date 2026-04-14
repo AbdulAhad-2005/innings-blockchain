@@ -17,14 +17,15 @@ const RewardSchema: Schema = new Schema({
   creatorId: { 
     type: Schema.Types.ObjectId, 
     required: true, 
-    refPath: "creatorType" 
+    refPath: "creatorType",
+    index: true
   },
   creatorType: { 
     type: String, 
     required: true, 
     enum: ["BrandUser", "AdminUser"] 
   },
-  points: { type: Number, required: true },
+  points: { type: Number, required: true, min: 1 },
   nftTokenId: { type: String },
   startDate: { type: Date, required: true },
   expirationDate: { type: Date, required: true },

@@ -3,8 +3,8 @@
 // Demonstrates usage of verifyToken — any logged-in user (any role) can call this.
 
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "../../../../lib/authMiddleware";
-import { getUserById } from "../../../../services/authService";
+import { verifyToken } from "@/lib/authMiddleware";
+import { getUserById } from "@/services/authService";
 
 /**
  * @swagger
