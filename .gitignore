@@ -43,3 +43,6 @@
 /truffle/.vercel
 /truffle/*.tsbuildinfo
 /truffle/next-env.d.ts
+
+
+/platform/app/public/uploads
