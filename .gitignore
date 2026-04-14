@@ -45,4 +45,4 @@ node_modules/
 /truffle/next-env.d.ts
 
 
-/platform/app/public/uploads
+/platform/public/uploads

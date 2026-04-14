@@ -1,16 +1,68 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiRequest } from "@/lib/api";
 
-const campaigns = [
-  { id: "cmp_001", name: "PAK vs AUS Quiz", brand: "Acme Sports", status: "active", participants: 4820, pending: 0 },
-  { id: "cmp_002", name: "India Prediction", brand: "PakCricket", status: "active", participants: 2150, pending: 0 },
-  { id: "cmp_003", name: "T20 Preview", brand: "IPL Official", status: "pending_review", participants: 0, pending: 5 },
-  { id: "cmp_004", name: "Suspicious Quiz", brand: "Unknown", status: "flagged", participants: 15000, pending: 12 },
-  { id: "cmp_005", name: "Old Campaign", brand: "Dead Brand", status: "completed", participants: 5400, pending: 0 },
-];
+interface Campaign {
+  _id: string;
+  status: string;
+  budget: number;
+  rewardCount?: number;
+  brandId?: {
+    name?: string;
+  };
+  matchId?: {
+    teamA?: { name?: string };
+    teamB?: { name?: string };
+  };
+}
 
 export default function CampaignsPage() {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchCampaigns = async () => {
+      try {
+        const response = await apiRequest<Campaign[]>("/api/admin/campaigns");
+        if (mounted) {
+          setCampaigns(response);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          setError(requestError instanceof Error ? requestError.message : "Failed to load campaigns.");
+        }
+      }
+    };
+
+    fetchCampaigns();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredCampaigns = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return campaigns;
+
+    return campaigns.filter((campaign) => {
+      const brandName = campaign.brandId?.name || "";
+      const matchName = `${campaign.matchId?.teamA?.name || ""} ${campaign.matchId?.teamB?.name || ""}`;
+      return (
+        campaign.status.toLowerCase().includes(normalized) ||
+        brandName.toLowerCase().includes(normalized) ||
+        matchName.toLowerCase().includes(normalized)
+      );
+    });
+  }, [campaigns, query]);
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -21,15 +73,20 @@ export default function CampaignsPage() {
       </div>
 
       <div className="flex gap-4">
-        <Input placeholder="Search campaigns..." className="max-w-xs" />
+        <Input
+          placeholder="Search campaigns..."
+          className="max-w-xs"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
         <select className="h-9 px-3 rounded-md border border-slate-200 text-sm">
           <option>All Status</option>
           <option>Active</option>
-          <option>Pending Review</option>
-          <option>Flagged</option>
           <option>Completed</option>
+          <option>Cancelled</option>
         </select>
       </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="table-container">
         <table className="admin-table">
@@ -39,43 +96,37 @@ export default function CampaignsPage() {
               <th>Name</th>
               <th>Brand</th>
               <th>Status</th>
-              <th>Participants</th>
-              <th>Pending</th>
+              <th>Budget</th>
+              <th>Rewards</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {campaigns.map((campaign) => (
-              <tr key={campaign.id}>
-                <td className="font-mono text-xs">{campaign.id}</td>
-                <td className="font-medium">{campaign.name}</td>
-                <td>{campaign.brand}</td>
+            {filteredCampaigns.map((campaign) => (
+              <tr key={campaign._id}>
+                <td className="font-mono text-xs">{campaign._id.slice(-8)}</td>
+                <td className="font-medium">{campaign.matchId?.teamA?.name || "Team A"} vs {campaign.matchId?.teamB?.name || "Team B"}</td>
+                <td>{campaign.brandId?.name || "Unknown"}</td>
                 <td>
-                  <Badge variant={campaign.status === 'active' ? 'success' : campaign.status === 'pending_review' ? 'warning' : campaign.status === 'flagged' ? 'destructive' : 'secondary'}>
-                    {campaign.status.replace('_', ' ')}
+                  <Badge variant={campaign.status === 'active' ? 'success' : campaign.status === 'completed' ? 'secondary' : campaign.status === 'cancelled' ? 'destructive' : 'warning'}>
+                    {campaign.status}
                   </Badge>
                 </td>
-                <td>{campaign.participants.toLocaleString()}</td>
-                <td>{campaign.pending}</td>
+                <td>{campaign.budget}</td>
+                <td>{campaign.rewardCount ?? 0}</td>
                 <td>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline">View</Button>
-                    {campaign.status === 'pending_review' && (
-                      <>
-                        <Button size="sm">Approve</Button>
-                        <Button size="sm" variant="destructive">Reject</Button>
-                      </>
-                    )}
-                    {campaign.status === 'flagged' && (
-                      <Button size="sm" variant="destructive">Ban</Button>
-                    )}
-                    {campaign.status === 'active' && (
-                      <Button size="sm" variant="outline">Flag</Button>
-                    )}
+                    <Button size="sm" variant="outline">Moderate</Button>
                   </div>
                 </td>
               </tr>
             ))}
+            {filteredCampaigns.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-slate-500">No campaigns found.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

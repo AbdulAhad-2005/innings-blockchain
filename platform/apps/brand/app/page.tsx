@@ -15,10 +15,10 @@ export default function BrandLandingPage() {
       </div>
 
       <div className="flex gap-4">
-        <Link href="/brand/login">
+        <Link href="/login">
           <Button variant="outline">Sign In</Button>
         </Link>
-        <Link href="/brand/signup">
+        <Link href="/signup">
           <Button>Apply for Access</Button>
         </Link>
       </div>

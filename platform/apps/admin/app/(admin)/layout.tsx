@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { clearToken } from "@/lib/auth";
 import { LayoutDashboard, Users, Building2, Megaphone, Settings, LogOut } from "lucide-react";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/brands", label: "Brands", icon: Building2 },
-  { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/users", label: "Users", icon: Users },
+  { href: "/brands", label: "Brands", icon: Building2 },
+  { href: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -39,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="mt-auto pt-4 border-t border-slate-700">
-          <Link href="/admin/login">
+          <Link href="/login" onClick={clearToken}>
             <div className="nav-item text-red-400">
               <LogOut className="w-4 h-4" />
               Sign Out

@@ -38,7 +38,7 @@ import { createQuestion, getQuestionsByQuiz } from "@/services/questionService";
  *     responses:
  *       201: { description: Success }
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyBrand(req);
     const { id } = await params;
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyBrand(req);
     const { id } = await params;

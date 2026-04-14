@@ -27,7 +27,7 @@ import { uploadAdImages } from "@/services/quizService";
  *       200: { description: Success }
  *       400: { description: Validation error or quiz not approved }
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyBrand(req);
     const { id } = await params;

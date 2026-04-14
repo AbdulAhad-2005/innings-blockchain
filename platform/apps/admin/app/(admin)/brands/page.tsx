@@ -1,16 +1,57 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiRequest } from "@/lib/api";
 
-const brands = [
-  { id: "brd_001", name: "Acme Sports", email: "acme@sports.com", status: "active", campaigns: 8, joined: "Dec 2025" },
-  { id: "brd_002", name: "PakCricket", email: "info@pakcricket.com", status: "active", campaigns: 5, joined: "Jan 2026" },
-  { id: "brd_003", name: "IPL Official", email: "admin@ipl.com", status: "active", campaigns: 12, joined: "Nov 2025" },
-  { id: "brd_004", name: "Tata Crux", email: "brand@crux.com", status: "pending", campaigns: 0, joined: "Jan 2026" },
-  { id: "brd_005", name: "Dead Brand", email: "old@brand.com", status: "inactive", campaigns: 0, joined: "Oct 2025" },
-];
+interface Brand {
+  _id: string;
+  name: string;
+  email: string;
+  verificationStatus?: string;
+  createdAt: string;
+}
 
 export default function BrandsPage() {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchBrands = async () => {
+      try {
+        const response = await apiRequest<Brand[]>("/api/admin/brands");
+        if (mounted) {
+          setBrands(response);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          setError(requestError instanceof Error ? requestError.message : "Failed to load brands.");
+        }
+      }
+    };
+
+    fetchBrands();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredBrands = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return brands;
+    return brands.filter(
+      (brand) =>
+        brand.name.toLowerCase().includes(normalized) ||
+        brand.email.toLowerCase().includes(normalized)
+    );
+  }, [brands, query]);
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -22,14 +63,20 @@ export default function BrandsPage() {
       </div>
 
       <div className="flex gap-4">
-        <Input placeholder="Search brands..." className="max-w-xs" />
+        <Input
+          placeholder="Search brands..."
+          className="max-w-xs"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
         <select className="h-9 px-3 rounded-md border border-slate-200 text-sm">
           <option>All Status</option>
-          <option>Active</option>
-          <option>Pending</option>
-          <option>Inactive</option>
+          <option>Verified</option>
+          <option>Unverified</option>
+          <option>Revoked</option>
         </select>
       </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="table-container">
         <table className="admin-table">
@@ -39,35 +86,37 @@ export default function BrandsPage() {
               <th>Brand Name</th>
               <th>Email</th>
               <th>Status</th>
-              <th>Campaigns</th>
               <th>Joined</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {brands.map((brand) => (
-              <tr key={brand.id}>
-                <td className="font-mono text-xs">{brand.id}</td>
+            {filteredBrands.map((brand) => (
+              <tr key={brand._id}>
+                <td className="font-mono text-xs">{brand._id.slice(-8)}</td>
                 <td className="font-medium">{brand.name}</td>
                 <td>{brand.email}</td>
                 <td>
-                  <Badge variant={brand.status === 'active' ? 'success' : brand.status === 'pending' ? 'warning' : 'secondary'}>
-                    {brand.status}
+                  <Badge variant={brand.verificationStatus === 'verified' ? 'success' : brand.verificationStatus === 'revoked' ? 'destructive' : 'warning'}>
+                    {brand.verificationStatus || 'unverified'}
                   </Badge>
                 </td>
-                <td>{brand.campaigns}</td>
-                <td>{brand.joined}</td>
+                <td>{new Date(brand.createdAt).toLocaleDateString()}</td>
                 <td>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline">View</Button>
-                    <Button size="sm" variant="outline">Analytics</Button>
-                    {brand.status === 'pending' && (
+                    {brand.verificationStatus !== 'verified' && (
                       <Button size="sm">Approve</Button>
                     )}
                   </div>
                 </td>
               </tr>
             ))}
+            {filteredBrands.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-slate-500">No brands found.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

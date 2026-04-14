@@ -27,7 +27,7 @@ import { submitAnswer } from "@/services/participationService";
  *       200:
  *         description: Answer processed. Returns if it was correct and the similarity score.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyCustomer(req);
     const { id } = await params;

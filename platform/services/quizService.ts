@@ -1,7 +1,7 @@
-import { connectDB } from "@/lib/db";
-import Quiz, { IQuiz } from "@/models/Quiz";
-import { saveFile } from "@/lib/storage";
-import { formatImageUrl } from "@/lib/utils";
+import { connectDB } from "../lib/db";
+import Quiz, { IQuiz } from "../models/Quiz";
+import { saveFile } from "../lib/storage";
+import { formatImageUrl } from "../lib/utils";
 
 export interface CreateBidPayload {
   matchId: string;

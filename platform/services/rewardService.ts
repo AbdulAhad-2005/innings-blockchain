@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { saveFile, deleteFile } from "@/lib/storage";
-import { connectDB } from "@/lib/db";
-import Reward, { IReward } from "@/models/Reward";
-import { JWTPayload } from "@/lib/authMiddleware";
-import { formatImageUrl } from "@/lib/utils";
+import { saveFile, deleteFile } from "../lib/storage";
+import { connectDB } from "../lib/db";
+import Reward, { IReward } from "../models/Reward";
+import { JWTPayload } from "../lib/authMiddleware";
+import { formatImageUrl } from "../lib/utils";
 
 // ---------------------------------------------------------------------------
 // Business Logic
@@ -96,7 +96,7 @@ export async function updateReward(id: string, data: Partial<RewardCreatePayload
   }
 
   const updated = await Reward.findByIdAndUpdate(id, updateData, { new: true });
-  if (!updated) return null;
+  if (!updated) throw new Error("Failed to update reward");
   const obj = updated.toObject();
   obj.imageUrl = formatImageUrl(obj.imageUrl);
   return obj;

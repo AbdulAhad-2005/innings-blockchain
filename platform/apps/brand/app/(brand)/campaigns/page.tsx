@@ -1,56 +1,77 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { apiRequest } from "@/lib/api";
 
-const campaigns = [
-  { 
-    id: 1,
-    name: "PAK vs AUS Launch", 
-    status: "active", 
-    type: "Quiz",
-    participants: 4820, 
-    conversions: 1240,
-    reward: "500 points",
-    match: "Pakistan vs Australia",
-    dates: "Jan 20 - Feb 10, 2026"
-  },
-  { 
-    id: 2,
-    name: "India Cricket Quiz", 
-    status: "active", 
-    type: "Prediction",
-    participants: 2150, 
-    conversions: 890,
-    reward: "NFT Badge",
-    match: "India vs England",
-    dates: "Jan 25 - Feb 5, 2026"
-  },
-  { 
-    id: 3,
-    name: "T20 World Cup Sprint", 
-    status: "scheduled", 
-    type: "Trivia",
-    participants: 0, 
-    conversions: 0,
-    reward: "$50 voucher",
-    match: "Feb 15, 2026",
-    dates: "Feb 1 - Feb 14, 2026"
-  },
-  { 
-    id: 4,
-    name: "IPL Preview Quiz", 
-    status: "draft", 
-    type: "Prediction",
-    participants: 0, 
-    conversions: 0,
-    reward: " merchandise",
-    match: "March 2026",
-    dates: "Not scheduled"
-  },
-];
+interface CampaignItem {
+  _id: string;
+  status: string;
+  budget: number;
+  rewardCount?: number;
+  startTime?: string;
+  endTime?: string;
+  matchId?: {
+    teamA?: { name?: string };
+    teamB?: { name?: string };
+  };
+}
 
 export default function CampaignsPage() {
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchCampaigns = async () => {
+      try {
+        const response = await apiRequest<CampaignItem[]>("/api/brands/campaigns");
+        if (mounted) {
+          setCampaigns(response);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          setError(requestError instanceof Error ? requestError.message : "Failed to load campaigns.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCampaigns();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredCampaigns = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return campaigns.filter((campaign) => {
+      const matchName = `${campaign.matchId?.teamA?.name || "Team A"} vs ${
+        campaign.matchId?.teamB?.name || "Team B"
+      }`;
+
+      const matchesQuery =
+        normalizedQuery.length === 0 ||
+        matchName.toLowerCase().includes(normalizedQuery) ||
+        campaign.status.toLowerCase().includes(normalizedQuery);
+
+      const matchesStatus = !statusFilter || campaign.status === statusFilter;
+
+      return matchesQuery && matchesStatus;
+    });
+  }, [campaigns, query, statusFilter]);
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -62,8 +83,17 @@ export default function CampaignsPage() {
       </div>
 
       <div className="flex gap-4">
-        <Input placeholder="Search campaigns..." className="max-w-xs" />
-        <select className="form-input max-w-xs">
+        <Input
+          placeholder="Search campaigns..."
+          className="max-w-xs"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <select
+          className="form-input max-w-xs"
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+        >
           <option value="">All Status</option>
           <option value="active">Active</option>
           <option value="scheduled">Scheduled</option>
@@ -71,15 +101,24 @@ export default function CampaignsPage() {
           <option value="completed">Completed</option>
         </select>
       </div>
+      {loading ? <p className="text-sm text-slate-500">Loading campaigns...</p> : null}
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
-        {campaigns.map((campaign) => (
-          <Card key={campaign.id} className="stat-card">
+        {filteredCampaigns.map((campaign) => {
+          const matchName = `${campaign.matchId?.teamA?.name || "Team A"} vs ${
+            campaign.matchId?.teamB?.name || "Team B"
+          }`;
+          const start = campaign.startTime ? new Date(campaign.startTime).toLocaleDateString() : "-";
+          const end = campaign.endTime ? new Date(campaign.endTime).toLocaleDateString() : "-";
+
+          return (
+          <Card key={campaign._id} className="stat-card">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-base">{campaign.name}</CardTitle>
-                  <CardDescription>{campaign.type} • {campaign.match}</CardDescription>
+                  <CardTitle className="text-base">{matchName}</CardTitle>
+                  <CardDescription>Budget campaign</CardDescription>
                 </div>
                 <Badge variant={campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'warning' : campaign.status === 'completed' ? 'info' : 'neutral'}>
                   {campaign.status}
@@ -89,16 +128,16 @@ export default function CampaignsPage() {
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-slate-500">Participants</p>
-                  <p className="font-semibold">{campaign.participants.toLocaleString()}</p>
+                  <p className="text-slate-500">Budget</p>
+                  <p className="font-semibold">{campaign.budget}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Conversions</p>
-                  <p className="font-semibold">{campaign.conversions.toLocaleString()}</p>
+                  <p className="text-slate-500">Rewards</p>
+                  <p className="font-semibold">{campaign.rewardCount ?? 0}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Reward</p>
-                  <p className="font-semibold">{campaign.reward}</p>
+                  <p className="text-slate-500">Dates</p>
+                  <p className="font-semibold">{start} - {end}</p>
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
@@ -110,7 +149,11 @@ export default function CampaignsPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
+        {!loading && filteredCampaigns.length === 0 ? (
+          <p className="text-sm text-slate-500">No campaigns found for this filter.</p>
+        ) : null}
       </div>
     </div>
   );

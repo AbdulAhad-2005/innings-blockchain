@@ -1,6 +1,6 @@
-import { connectDB } from "@/lib/db";
-import Team, { ITeam } from "@/models/Team";
-import { formatImageUrl } from "@/lib/utils";
+import { connectDB } from "../lib/db";
+import Team, { ITeam } from "../models/Team";
+import { formatImageUrl } from "../lib/utils";
 
 export interface CreateTeamPayload {
   name: string;

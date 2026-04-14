@@ -1,6 +1,6 @@
-import { connectDB } from "@/lib/db";
-import Question, { IQuestion } from "@/models/Question";
-import Quiz from "@/models/Quiz";
+import { connectDB } from "../lib/db";
+import Question, { IQuestion } from "../models/Question";
+import Quiz from "../models/Quiz";
 
 export interface CreateQuestionPayload {
   quizId: string;

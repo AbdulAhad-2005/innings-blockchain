@@ -1,20 +1,83 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/api";
 
-const quickStats = [
-  { label: "Active campaigns", value: "08" },
-  { label: "Live quizzes", value: "03" },
-  { label: "Rewards pending", value: "14" },
-];
+interface MatchItem {
+  _id: string;
+  status?: string;
+  startTime?: string;
+  teamA?: { name?: string };
+  teamB?: { name?: string };
+}
 
-const fixtures = [
-  { teams: "Pakistan vs Australia", status: "Live now", slot: "22:30 PKT" },
-  { teams: "India vs England", status: "Upcoming", slot: "Tomorrow, 18:00" },
-  { teams: "NZ vs South Africa", status: "Upcoming", slot: "Fri, 20:30" },
-];
+interface QuizItem {
+  _id: string;
+  status?: string;
+}
+
+interface RewardItem {
+  _id: string;
+}
 
 export default function UserHubPage() {
+  const [matches, setMatches] = useState<MatchItem[]>([]);
+  const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+      try {
+        const [matchData, quizData] = await Promise.all([
+          apiRequest<MatchItem[]>("/api/public/matches"),
+          apiRequest<QuizItem[]>("/api/public/quizzes"),
+        ]);
+
+        let rewardData: RewardItem[] = [];
+        try {
+          rewardData = await apiRequest<RewardItem[]>("/api/rewards");
+        } catch {
+          rewardData = [];
+        }
+
+        if (mounted) {
+          setMatches(matchData);
+          setQuizzes(quizData);
+          setRewards(rewardData);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          const message = requestError instanceof Error ? requestError.message : "Failed to load dashboard data.";
+          setError(message);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const quickStats = useMemo(
+    () => [
+      { label: "Upcoming matches", value: matches.length.toString().padStart(2, "0") },
+      {
+        label: "Live quizzes",
+        value: quizzes.filter((quiz) => quiz.status === "active").length.toString().padStart(2, "0"),
+      },
+      { label: "Rewards available", value: rewards.length.toString().padStart(2, "0") },
+    ],
+    [matches, quizzes, rewards]
+  );
+
   return (
     <main className="grid gap-6">
       <Card className="glass-panel neo-panel fade-rise shimmer-surface rounded-[2rem] border-white/10 bg-white/5 p-7">
@@ -36,6 +99,7 @@ export default function UserHubPage() {
           </div>
         </CardContent>
       </Card>
+      {error ? <p className="text-sm text-red-300">{error}</p> : null}
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="shell-card neo-panel fade-rise delay-1 border-white/10 bg-white/5">
@@ -44,20 +108,31 @@ export default function UserHubPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              {fixtures.map((match) => (
+              {matches.slice(0, 3).map((match) => {
+                const teams = `${match.teamA?.name || "Team A"} vs ${match.teamB?.name || "Team B"}`;
+                const startLabel = match.startTime
+                  ? new Date(match.startTime).toLocaleString()
+                  : "TBD";
+                const status = match.status || "scheduled";
+
+                return (
                 <div
-                  key={match.teams}
+                  key={match._id}
                   className="neo-tile tilt-card rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
                 >
                   <p className="font-display text-2xl uppercase tracking-[0.04em] text-white">
-                    {match.teams}
+                    {teams}
                   </p>
                   <div className="mt-2 flex items-center justify-between text-sm">
-                    <Badge variant="secondary">{match.status}</Badge>
-                    <span className="text-white/70">{match.slot}</span>
+                    <Badge variant="secondary">{status}</Badge>
+                    <span className="text-white/70">{startLabel}</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
+              {matches.length === 0 ? (
+                <p className="text-sm text-white/70">No fixtures available.</p>
+              ) : null}
             </div>
           </CardContent>
         </Card>

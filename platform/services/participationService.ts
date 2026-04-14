@@ -1,9 +1,9 @@
-import { connectDB } from "@/lib/db";
-import Question from "@/models/Question";
-import Quiz from "@/models/Quiz";
-import UserAnswer from "@/models/UserAnswer";
-import CustomerUser from "@/models/CustomerUser";
-import Match from "@/models/Match";
+import { connectDB } from "../lib/db";
+import Question from "../models/Question";
+import Quiz from "../models/Quiz";
+import UserAnswer from "../models/UserAnswer";
+import CustomerUser from "../models/CustomerUser";
+import Match from "../models/Match";
 // @ts-ignore - string-similarity might not have types installed
 import stringSimilarity from "string-similarity";
 

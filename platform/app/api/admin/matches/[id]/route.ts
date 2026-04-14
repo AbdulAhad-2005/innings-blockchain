@@ -58,7 +58,7 @@ import { getMatchById, updateMatch, deleteMatch } from "@/services/matchService"
  *       200:
  *         description: Match deleted
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;

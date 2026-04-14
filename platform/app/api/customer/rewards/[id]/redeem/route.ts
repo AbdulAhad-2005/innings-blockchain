@@ -20,7 +20,7 @@ import { redeemReward } from "@/services/redemptionService";
  *       400:
  *         description: Insufficient points or reward not found/inactive.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyCustomer(req);
     const { id } = await params;

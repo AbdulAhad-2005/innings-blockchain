@@ -56,7 +56,7 @@ import { getRewardById, updateReward, deleteReward } from "@/services/rewardServ
  *       200:
  *         description: Deleted
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyToken(req);
     const { id } = await params;
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyToken(req);
     const { id } = await params;
@@ -89,7 +89,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = verifyToken(req);
     const { id } = await params;

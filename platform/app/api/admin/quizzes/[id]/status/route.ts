@@ -26,7 +26,7 @@ import { approveBid, rejectBid } from "@/services/quizService";
  *     responses:
  *       200: { description: Success }
  */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;

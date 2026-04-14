@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { clearToken } from "@/lib/auth";
 import { 
   LayoutDashboard, 
   Megaphone, 
@@ -11,15 +11,14 @@ import {
   Gift, 
   Settings,
   LogOut,
-  Menu
 } from "lucide-react";
 
 const navItems = [
-  { href: "/brand", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/brand/campaigns", label: "Campaigns", icon: Megaphone },
-  { href: "/brand/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/brand/rewards", label: "Rewards", icon: Gift },
-  { href: "/brand/settings", label: "Settings", icon: Settings },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/rewards", label: "Rewards", icon: Gift },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function BrandDashboardLayout({ 
@@ -54,7 +53,7 @@ export default function BrandDashboardLayout({
         </nav>
 
         <div className="mt-auto pt-4 border-t border-slate-200">
-          <Link href="/login">
+          <Link href="/login" onClick={clearToken}>
             <div className="nav-item text-red-600">
               <LogOut className="w-4 h-4" />
               Sign Out

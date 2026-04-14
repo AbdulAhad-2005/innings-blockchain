@@ -7,9 +7,16 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev:user",
     "dev:user": "npm run dev -w @innings/user",
+    "dev:brand": "npm run dev -w @innings/brand",
+    "dev:admin": "npm run dev -w @innings/admin",
     "build:user": "npm run build -w @innings/user",
+    "build:brand": "npm run build -w @innings/brand",
+    "build:admin": "npm run build -w @innings/admin",
     "lint:user": "npm run lint -w @innings/user",
+    "lint:brand": "npm run lint -w @innings/brand",
+    "lint:admin": "npm run lint -w @innings/admin",
     "test:user": "npm run test -w @innings/user"
   }
 }

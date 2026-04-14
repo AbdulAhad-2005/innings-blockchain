@@ -4,6 +4,10 @@ export interface IReward extends Document {
   creatorId: mongoose.Types.ObjectId;
   creatorType: "BrandUser" | "AdminUser";
   points: number; // Cost in points to redeem this reward
+  rewardType?: string;
+  proofHash?: string;
+  proofTxHash?: string;
+  rewardProofAddress?: string;
   nftTokenId?: string;
   startDate: Date;
   expirationDate: Date;
@@ -26,6 +30,10 @@ const RewardSchema: Schema = new Schema({
     enum: ["BrandUser", "AdminUser"] 
   },
   points: { type: Number, required: true, min: 1 },
+  rewardType: { type: String, default: "points" },
+  proofHash: { type: String },
+  proofTxHash: { type: String },
+  rewardProofAddress: { type: String },
   nftTokenId: { type: String },
   startDate: { type: Date, required: true },
   expirationDate: { type: Date, required: true },

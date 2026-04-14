@@ -1,7 +1,7 @@
-import { connectDB } from "@/lib/db";
-import Reward from "@/models/Reward";
-import CustomerUser from "@/models/CustomerUser";
-import RewardRedemption from "@/models/RewardRedemption";
+import { connectDB } from "../lib/db";
+import Reward from "../models/Reward";
+import CustomerUser from "../models/CustomerUser";
+import RewardRedemption from "../models/RewardRedemption";
 import mongoose from "mongoose";
 
 export async function redeemReward(userId: string, rewardId: string) {

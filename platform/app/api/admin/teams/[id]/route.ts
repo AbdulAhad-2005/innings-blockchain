@@ -55,7 +55,7 @@ import { getTeamById, updateTeam, deleteTeam } from "@/services/teamService";
  *       200:
  *         description: Team deleted
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;

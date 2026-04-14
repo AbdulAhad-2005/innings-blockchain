@@ -17,7 +17,7 @@ import { getQuestionsByQuiz, updateQuestion, deleteQuestion } from "@/services/q
  *     responses:
  *       200: { description: Success }
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
  *     responses:
  *       200: { description: Success }
  */
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;
@@ -75,7 +75,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     verifyAdmin(req);
     const { id } = await params;

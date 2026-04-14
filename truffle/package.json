@@ -1,0 +1,19 @@
+{
+  "name": "innings-wirefluid-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Truffle contracts for Innings blockchain reward proofs, SBTs, and brand commitments.",
+  "scripts": {
+    "compile": "truffle compile",
+    "test": "truffle test",
+    "migrate": "truffle migrate",
+    "migrate:wirefluid": "truffle migrate --network wirefluid",
+    "migrate:wirefluid:reset": "truffle migrate --network wirefluid --reset"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6",
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^16.6.1",
+    "truffle": "^5.11.5"
+  }
+}

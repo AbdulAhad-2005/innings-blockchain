@@ -1,21 +1,95 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/api";
 
-const stats = [
-  { label: "Total Users", value: "24,832", change: "+1,204 this week" },
-  { label: "Active Brands", value: "156", change: "+12 this month" },
-  { label: "Active Campaigns", value: "42", change: "+8 this week" },
-  { label: "Total Transactions", value: "89,432", change: "+12.4K this week" },
-];
+interface Customer {
+  _id: string;
+  name: string;
+  createdAt: string;
+}
 
-const recentActivity = [
-  { action: "New user registered", user: "user_abc123", time: "2 mins ago" },
-  { action: "Brand created campaign", user: "Acme Sports", time: "15 mins ago" },
-  { action: "Reward claimed", user: "user_def456", time: "32 mins ago" },
-  { action: "Campaign approved", user: "Admin", time: "1 hour ago" },
-  { action: "User KYC verified", user: "user_ghi789", time: "2 hours ago" },
-];
+interface Brand {
+  _id: string;
+  name: string;
+  verificationStatus?: string;
+  createdAt: string;
+}
+
+interface Campaign {
+  _id: string;
+  status: string;
+  createdAt: string;
+  brandId?: {
+    name?: string;
+  };
+}
 
 export default function AdminDashboardPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchDashboard = async () => {
+      try {
+        const [customerData, brandData, campaignData] = await Promise.all([
+          apiRequest<Customer[]>("/api/admin/customers"),
+          apiRequest<Brand[]>("/api/admin/brands"),
+          apiRequest<Campaign[]>("/api/admin/campaigns"),
+        ]);
+
+        if (mounted) {
+          setCustomers(customerData);
+          setBrands(brandData);
+          setCampaigns(campaignData);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          setError(requestError instanceof Error ? requestError.message : "Failed to load dashboard data.");
+        }
+      }
+    };
+
+    fetchDashboard();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      { label: "Total Users", value: customers.length.toString(), change: "Customer accounts" },
+      {
+        label: "Active Brands",
+        value: brands.filter((brand) => brand.verificationStatus === "verified").length.toString(),
+        change: "Verified on platform",
+      },
+      {
+        label: "Active Campaigns",
+        value: campaigns.filter((campaign) => campaign.status === "active").length.toString(),
+        change: "Currently running",
+      },
+      { label: "Total Campaigns", value: campaigns.length.toString(), change: "All statuses" },
+    ],
+    [customers, brands, campaigns]
+  );
+
+  const recentActivity = useMemo(() => {
+    const entries = campaigns.slice(0, 5).map((campaign) => ({
+      action: `Campaign ${campaign.status}`,
+      user: campaign.brandId?.name || "Unknown brand",
+      time: new Date(campaign.createdAt).toLocaleString(),
+    }));
+
+    return entries;
+  }, [campaigns]);
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -25,6 +99,7 @@ export default function AdminDashboardPage() {
         </div>
         <Badge variant="success">System Healthy</Badge>
       </div>
+      {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -56,6 +131,11 @@ export default function AdminDashboardPage() {
                 <td className="text-slate-500">{item.time}</td>
               </tr>
             ))}
+            {recentActivity.length === 0 ? (
+              <tr>
+                <td className="text-slate-500" colSpan={3}>No recent campaign activity yet.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

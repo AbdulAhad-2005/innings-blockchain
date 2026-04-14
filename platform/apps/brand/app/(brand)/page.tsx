@@ -1,22 +1,63 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/api";
 
-const stats = [
-  { label: "Active Campaigns", value: "8", change: "+2 this month" },
-  { label: "Total Participants", value: "12.4K", change: "+1.2K this week" },
-  { label: "Rewards Claimed", value: "3,842", change: "89% claim rate" },
-  { label: "Engagement Rate", value: "67%", change: "+5% vs last month" },
-];
-
-const campaigns = [
-  { name: "PAK vs AUS Launch", status: "active", participants: 4820, conversions: 1240, match: "Pakistan vs Australia" },
-  { name: "India Cricket Quiz", status: "active", participants: 2150, conversions: 890, match: "India vs England" },
-  { name: "T20 World Cup", status: "scheduled", participants: 0, conversions: 0, match: "Feb 15, 2026" },
-  { name: "IPL Sprint", status: "completed", participants: 5400, conversions: 2100, match: "IPL 2025" },
-];
+interface CampaignItem {
+  _id: string;
+  status: string;
+  budget: number;
+  rewardCount?: number;
+  matchId?: {
+    teamA?: { name?: string };
+    teamB?: { name?: string };
+  };
+}
 
 export default function BrandDashboardPage() {
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchCampaigns = async () => {
+      try {
+        const response = await apiRequest<CampaignItem[]>("/api/brands/campaigns");
+        if (mounted) {
+          setCampaigns(response);
+        }
+      } catch (requestError: unknown) {
+        if (mounted) {
+          setError(requestError instanceof Error ? requestError.message : "Failed to load dashboard data.");
+        }
+      }
+    };
+
+    fetchCampaigns();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(() => {
+    const activeCount = campaigns.filter((campaign) => campaign.status === "active").length;
+    const totalBudget = campaigns.reduce((sum, campaign) => sum + campaign.budget, 0);
+    const totalRewards = campaigns.reduce((sum, campaign) => sum + Number(campaign.rewardCount || 0), 0);
+    const scheduled = campaigns.filter((campaign) => campaign.status === "scheduled").length;
+
+    return [
+      { label: "Active Campaigns", value: activeCount.toString(), change: `${campaigns.length} total` },
+      { label: "Scheduled", value: scheduled.toString(), change: "Awaiting launch" },
+      { label: "Total Budget", value: totalBudget.toString(), change: "Across all campaigns" },
+      { label: "Rewards Planned", value: totalRewards.toString(), change: "Current commitments" },
+    ];
+  }, [campaigns]);
+
   return (
     <div className="space-y-6">
       <div className="page-header">
@@ -26,6 +67,7 @@ export default function BrandDashboardPage() {
         </div>
         <Button>+ New Campaign</Button>
       </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -53,18 +95,18 @@ export default function BrandDashboardPage() {
                 <tr>
                   <th>Campaign</th>
                   <th>Match</th>
-                  <th>Participants</th>
-                  <th>Conversions</th>
+                  <th>Budget</th>
+                  <th>Rewards</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {campaigns.map((campaign) => (
-                  <tr key={campaign.name}>
-                    <td className="font-medium">{campaign.name}</td>
-                    <td>{campaign.match}</td>
-                    <td>{campaign.participants.toLocaleString()}</td>
-                    <td>{campaign.conversions.toLocaleString()}</td>
+                  <tr key={campaign._id}>
+                    <td className="font-medium">{campaign._id.slice(-6).toUpperCase()}</td>
+                    <td>{campaign.matchId?.teamA?.name || "Team A"} vs {campaign.matchId?.teamB?.name || "Team B"}</td>
+                    <td>{campaign.budget}</td>
+                    <td>{campaign.rewardCount ?? 0}</td>
                     <td>
                       <Badge variant={campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'warning' : 'neutral'}>
                         {campaign.status}
