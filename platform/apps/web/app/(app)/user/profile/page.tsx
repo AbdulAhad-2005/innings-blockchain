@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -114,7 +115,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-6">
-              <Button variant="outline" className="w-full">Edit Profile</Button>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/user/rewards">View Rewards</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

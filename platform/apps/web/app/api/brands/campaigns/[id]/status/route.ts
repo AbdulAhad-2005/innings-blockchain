@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyBrand } from "@/lib/serverAuth"
 import { connectDB } from "@/lib/db"
 import Quiz from "@/models/Quiz"
+import {
+  cancelCampaignCommitmentOnChain,
+  completeCampaignCommitmentOnChain,
+  hasBlockchainSigningConfig,
+} from "@/lib/blockchain"
 
 const ALLOWED_STATUSES = ["scheduled", "active", "completed", "cancelled"] as const
 
@@ -29,15 +34,45 @@ export async function PATCH(
       )
     }
 
-    const campaign = await Quiz.findOneAndUpdate(
-      { _id: id, brandId: user.userId },
-      { status: body.status },
-      { new: true }
-    )
+    const campaign = await Quiz.findOne({ _id: id, brandId: user.userId })
 
     if (!campaign) {
       return NextResponse.json({ error: "Campaign not found." }, { status: 404 })
     }
+
+    let statusTxHash = campaign.statusTxHash
+
+    if (
+      campaign.blockchainCampaignId &&
+      hasBlockchainSigningConfig() &&
+      (body.status === "completed" || body.status === "cancelled")
+    ) {
+      try {
+        const chainResult =
+          body.status === "completed"
+            ? await completeCampaignCommitmentOnChain(campaign.blockchainCampaignId.toString())
+            : await cancelCampaignCommitmentOnChain(campaign.blockchainCampaignId.toString())
+
+        statusTxHash = chainResult.txHash
+      } catch (chainError) {
+        return NextResponse.json(
+          {
+            error:
+              chainError instanceof Error
+                ? `On-chain status update failed: ${chainError.message}`
+                : "On-chain status update failed.",
+          },
+          { status: 502 }
+        )
+      }
+    }
+
+    campaign.status = body.status
+    if (statusTxHash) {
+      campaign.statusTxHash = statusTxHash
+    }
+
+    await campaign.save()
 
     return NextResponse.json(campaign)
   } catch (error) {

@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/animations"
 import { AnimatedContainer } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { LayoutDashboard, Users, Building2, Megaphone, Settings } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Megaphone, Settings, Gamepad2, Flag } from "lucide-react"
 
 interface CustomerItem {
   _id: string
@@ -149,8 +150,10 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-gray-600 mt-1">Monitor and manage the platform</p>
           </div>
-          <Button variant="outline" className="w-fit">
-            <Settings className="mr-2 h-4 w-4" /> Settings
+          <Button variant="outline" className="w-fit" asChild>
+            <Link href="/admin/settings">
+              <Settings className="mr-2 h-4 w-4" /> Settings
+            </Link>
           </Button>
         </div>
       </FadeIn>
@@ -247,22 +250,42 @@ export default function AdminDashboard() {
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button variant="outline" className="h-auto py-6 flex-col gap-2">
-            <Users className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase">Manage Users</span>
+        <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/users">
+              <Users className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Users</span>
+            </Link>
           </Button>
-          <Button variant="outline" className="h-auto py-6 flex-col gap-2">
-            <Building2 className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase">Manage Brands</span>
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/brands">
+              <Building2 className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Brands</span>
+            </Link>
           </Button>
-          <Button variant="outline" className="h-auto py-6 flex-col gap-2">
-            <Megaphone className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase">Campaigns</span>
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/teams">
+              <Flag className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Teams</span>
+            </Link>
           </Button>
-          <Button variant="outline" className="h-auto py-6 flex-col gap-2">
-            <Settings className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase">Settings</span>
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/matches">
+              <Gamepad2 className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Matches</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/campaigns">
+              <Megaphone className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Campaigns</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto py-6 flex-col gap-2" asChild>
+            <Link href="/admin/settings">
+              <Settings className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase">Settings</span>
+            </Link>
           </Button>
         </CardContent>
       </Card>

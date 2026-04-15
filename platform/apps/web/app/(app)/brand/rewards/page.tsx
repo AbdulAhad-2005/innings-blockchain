@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Gift, Plus, MoreVertical } from "lucide-react"
+import { Gift, Plus } from "lucide-react"
 
 interface RewardItem {
   _id: string
@@ -20,22 +20,64 @@ export default function BrandRewardsPage() {
   const [rewards, setRewards] = useState<RewardItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [creating, setCreating] = useState(false)
+
+  const loadRewards = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await apiRequest<RewardItem[]>("/api/rewards", { params: { mine: true } })
+      setRewards(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load rewards.")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const loadRewards = async () => {
-      try {
-        setLoading(true)
-        const data = await apiRequest<RewardItem[]>("/api/rewards", { params: { mine: true } })
-        setRewards(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load rewards.")
-      } finally {
-        setLoading(false)
-      }
+    void loadRewards()
+  }, [loadRewards])
+
+  const handleAddReward = async () => {
+    const pointsInput = window.prompt("Reward points required", "100")
+    const description = window.prompt("Reward description", "Matchday bonus reward")
+    const expirationInput = window.prompt(
+      "Expiration date-time (ISO)",
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    )
+
+    if (!pointsInput || !expirationInput) {
+      return
     }
 
-    void loadRewards()
-  }, [])
+    const points = Number(pointsInput)
+
+    if (!Number.isFinite(points) || points <= 0) {
+      setError("points must be a positive number.")
+      return
+    }
+
+    try {
+      setCreating(true)
+      setError("")
+
+      await apiRequest("/api/rewards", {
+        method: "POST",
+        body: JSON.stringify({
+          points,
+          startDate: new Date().toISOString(),
+          expirationDate: expirationInput,
+          description: description?.trim() || undefined,
+        }),
+      })
+
+      await loadRewards()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create reward.")
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const rewardCards = useMemo(
     () =>
@@ -65,8 +107,8 @@ export default function BrandRewardsPage() {
               Reward Pool
             </h1>
           </div>
-          <Button variant="secondary">
-            <Plus className="mr-2 h-4 w-4" /> Add Reward
+          <Button variant="secondary" onClick={handleAddReward} disabled={creating}>
+            <Plus className="mr-2 h-4 w-4" /> {creating ? "Creating..." : "Add Reward"}
           </Button>
         </div>
       </FadeIn>
@@ -94,9 +136,9 @@ export default function BrandRewardsPage() {
                       <p className="text-xs text-gray-500">Claimed / Total</p>
                       <p className="font-display font-bold">{reward.claims} / {reward.claims + reward.remaining}</p>
                     </div>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <Badge variant={reward.status === "Active" ? "secondary" : "outline"}>
+                      {reward.status === "Active" ? "Live" : "Closed"}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>

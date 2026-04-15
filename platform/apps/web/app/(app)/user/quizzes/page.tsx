@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Trophy, Brain } from "lucide-react"
+import { Trophy, Brain, CircleCheck, Sparkles } from "lucide-react"
 
 interface QuizItem {
   _id: string
@@ -16,10 +17,33 @@ interface QuizItem {
   createdAt: string
 }
 
+interface QuestionItem {
+  _id: string
+  questionText: string
+  options: string[]
+}
+
+interface AnswerResponse {
+  isCorrect: boolean
+  similarity: number
+  pointsAwarded: number
+  totalPoints: number
+  blockchain?: {
+    txHash: string
+    proofHash?: string
+    contractAddress?: string
+  } | null
+}
+
 export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<QuizItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null)
+  const [questions, setQuestions] = useState<QuestionItem[]>([])
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [answeringId, setAnsweringId] = useState<string | null>(null)
+  const [answerResults, setAnswerResults] = useState<Record<string, AnswerResponse>>({})
 
   useEffect(() => {
     const loadQuizzes = async () => {
@@ -37,6 +61,43 @@ export default function QuizzesPage() {
     void loadQuizzes()
   }, [])
 
+  const openQuiz = async (quizId: string) => {
+    try {
+      setLoadingQuestions(true)
+      setError("")
+      setActiveQuizId(quizId)
+      setAnswerResults({})
+
+      const data = await apiRequest<QuestionItem[]>(`/api/public/quizzes/${quizId}/questions`)
+      setQuestions(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load questions.")
+    } finally {
+      setLoadingQuestions(false)
+    }
+  }
+
+  const submitAnswer = async (questionId: string, answer: string) => {
+    try {
+      setAnsweringId(questionId)
+      setError("")
+
+      const result = await apiRequest<AnswerResponse>(
+        `/api/customer/quizzes/questions/${questionId}/answer`,
+        {
+          method: "POST",
+          body: JSON.stringify({ answer }),
+        }
+      )
+
+      setAnswerResults((prev) => ({ ...prev, [questionId]: result }))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit answer.")
+    } finally {
+      setAnsweringId(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -52,7 +113,7 @@ export default function QuizzesPage() {
       <Card className="neo-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5" /> Coming Soon
+            <Brain className="w-5 h-5" /> Available Quizzes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -83,15 +144,83 @@ export default function QuizzesPage() {
                       {new Date(quiz.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <Badge variant={quiz.status.toLowerCase() === "active" ? "primary" : "outline"}>
-                    {quiz.status}
-                  </Badge>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={quiz.status.toLowerCase() === "active" ? "primary" : "outline"}>
+                      {quiz.status}
+                    </Badge>
+                    <Button variant="secondary" size="sm" onClick={() => openQuiz(quiz._id)}>
+                      Play Quiz
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {activeQuizId && (
+        <Card className="neo-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" /> Quiz Questions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingQuestions && (
+              <div className="neo-card p-6 text-center text-gray-600">Loading questions...</div>
+            )}
+
+            {!loadingQuestions && questions.length === 0 && (
+              <div className="neo-card p-6 text-center text-gray-600">
+                No questions have been added yet for this quiz.
+              </div>
+            )}
+
+            {!loadingQuestions &&
+              questions.map((question) => {
+                const result = answerResults[question._id]
+
+                return (
+                  <div key={question._id} className="neo-card p-4 space-y-4">
+                    <p className="font-display font-bold text-lg">{question.questionText}</p>
+
+                    <div className="grid md:grid-cols-2 gap-2">
+                      {question.options.map((option) => (
+                        <Button
+                          key={option}
+                          variant="outline"
+                          disabled={Boolean(result) || answeringId === question._id}
+                          onClick={() => submitAnswer(question._id, option)}
+                          className="justify-start"
+                        >
+                          {option}
+                        </Button>
+                      ))}
+                    </div>
+
+                    {result && (
+                      <div className="neo-card p-3 bg-[#fff8e7]">
+                        <p className="font-display font-bold flex items-center gap-2">
+                          <CircleCheck className="w-4 h-4" />
+                          {result.isCorrect
+                            ? `Correct! +${result.pointsAwarded} credit`
+                            : "Incorrect answer"}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Similarity: {(result.similarity * 100).toFixed(1)}% · Total Points: {result.totalPoints}
+                        </p>
+                        {result.blockchain?.txHash && (
+                          <p className="text-xs text-gray-500 mt-1">Proof TX: {result.blockchain.txHash}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

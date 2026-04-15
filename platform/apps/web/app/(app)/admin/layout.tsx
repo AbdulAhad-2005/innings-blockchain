@@ -14,6 +14,8 @@ import {
   Users,
   Building2,
   Megaphone,
+  Gamepad2,
+  Flag,
   Settings,
   LogOut,
   Menu,
@@ -26,6 +28,8 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/brands", label: "Brands", icon: Building2 },
+  { href: "/admin/teams", label: "Teams", icon: Flag },
+  { href: "/admin/matches", label: "Matches", icon: Gamepad2 },
   { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ]

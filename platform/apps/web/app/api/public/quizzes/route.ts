@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
+import { Types } from "mongoose"
 import { connectDB } from "@/lib/db"
 import Quiz from "@/models/Quiz"
+import Question from "@/models/Question"
 
 export async function GET() {
   try {
@@ -23,12 +25,28 @@ export async function GET() {
         createdAt: Date
       }>
 
+    const quizIds = quizzes.map((quiz) => quiz._id.toString())
+    const quizObjectIds = quizIds
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id))
+    const questionCounts =
+      quizObjectIds.length > 0
+        ? await Question.aggregate<{ _id: string; count: number }>([
+            { $match: { quizId: { $in: quizObjectIds } } },
+            { $group: { _id: "$quizId", count: { $sum: 1 } } },
+          ])
+        : []
+
+    const questionCountByQuiz = new Map(
+      questionCounts.map((entry) => [entry._id.toString(), entry.count])
+    )
+
     const formattedQuizzes = quizzes.map((quiz) => ({
       _id: quiz._id.toString(),
       title: quiz.title || "Match Quiz",
       matchId: quiz.matchId?.toString(),
       status: quiz.status,
-      questionCount: quiz.questions?.length || 0,
+      questionCount: questionCountByQuiz.get(quiz._id.toString()) ?? quiz.questions?.length ?? 0,
       rewardPoints: quiz.rewardPoints ?? quiz.rewardCount ?? 0,
       budget: quiz.budget ?? 0,
       createdAt: quiz.createdAt,

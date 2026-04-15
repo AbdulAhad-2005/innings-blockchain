@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Building2, MoreVertical, Plus } from "lucide-react"
+import { Building2, Plus } from "lucide-react"
 
 interface BrandItem {
   _id: string
@@ -103,7 +103,6 @@ export default function AdminBrandsPage() {
                     <th>Campaigns</th>
                     <th>Status</th>
                     <th>Joined</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,23 +117,18 @@ export default function AdminBrandsPage() {
                         </Badge>
                       </td>
                       <td>{new Date(brand.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </td>
                     </tr>
                   ))}
                   {loading && (
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-500">
+                      <td colSpan={5} className="text-center text-gray-500">
                         Loading brands...
                       </td>
                     </tr>
                   )}
                   {!loading && brands.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-500">
+                      <td colSpan={5} className="text-center text-gray-500">
                         No brands found.
                       </td>
                     </tr>

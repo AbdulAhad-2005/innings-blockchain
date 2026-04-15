@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -98,8 +99,12 @@ export default function BrandSettingsPage() {
             </div>
 
             <div className="mt-6 space-y-3">
-              <Button variant="secondary" className="w-full">Edit Brand Profile</Button>
-              <Button variant="outline" className="w-full">Manage API Keys</Button>
+              <Button variant="secondary" className="w-full" asChild>
+                <Link href="/brand/campaigns">Manage Campaigns</Link>
+              </Button>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/brand/rewards">Manage Rewards</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

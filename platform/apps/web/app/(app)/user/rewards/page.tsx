@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
 import { Gift } from "lucide-react"
@@ -18,6 +19,7 @@ export default function RewardsPage() {
   const [rewards, setRewards] = useState<RewardItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [redeemingId, setRedeemingId] = useState<string | null>(null)
 
   useEffect(() => {
     const loadRewards = async () => {
@@ -34,6 +36,24 @@ export default function RewardsPage() {
 
     void loadRewards()
   }, [])
+
+  const handleRedeem = async (rewardId: string) => {
+    try {
+      setRedeemingId(rewardId)
+      setError("")
+
+      await apiRequest(`/api/customer/rewards/${rewardId}/redeem`, {
+        method: "POST",
+      })
+
+      const refreshed = await apiRequest<RewardItem[]>("/api/rewards")
+      setRewards(refreshed)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to redeem reward.")
+    } finally {
+      setRedeemingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -81,7 +101,17 @@ export default function RewardsPage() {
                       Expires: {new Date(reward.expirationDate).toLocaleDateString()}
                     </p>
                   </div>
-                  <Badge variant="primary">Active</Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge variant="primary">Active</Badge>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleRedeem(reward._id)}
+                      disabled={redeemingId === reward._id}
+                    >
+                      {redeemingId === reward._id ? "Redeeming..." : "Redeem"}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Users, MoreVertical, Shield } from "lucide-react"
+import { Users, Shield } from "lucide-react"
 
 interface UserItem {
   _id: string
@@ -103,7 +103,6 @@ export default function AdminUsersPage() {
                     <th>Role</th>
                     <th>Status</th>
                     <th>Joined</th>
-                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -120,23 +119,18 @@ export default function AdminUsersPage() {
                         </Badge>
                       </td>
                       <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </td>
                     </tr>
                   ))}
                   {loading && (
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-500">
+                      <td colSpan={5} className="text-center text-gray-500">
                         Loading users...
                       </td>
                     </tr>
                   )}
                   {!loading && users.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-500">
+                      <td colSpan={5} className="text-center text-gray-500">
                         No users found.
                       </td>
                     </tr>

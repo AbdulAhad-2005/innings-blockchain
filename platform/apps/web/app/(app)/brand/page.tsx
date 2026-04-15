@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -128,8 +129,10 @@ export default function BrandDashboard() {
             </h1>
             <p className="text-gray-600 mt-1">Here's how your campaigns are performing</p>
           </div>
-          <Button variant="secondary" className="w-fit">
-            <Plus className="mr-2 h-4 w-4" /> Create Campaign
+          <Button variant="secondary" className="w-fit" asChild>
+            <Link href="/brand/campaigns">
+              <Plus className="mr-2 h-4 w-4" /> Create Campaign
+            </Link>
           </Button>
         </div>
       </FadeIn>
@@ -167,7 +170,9 @@ export default function BrandDashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Campaigns</CardTitle>
-            <Button variant="outline" size="sm">View All</Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/brand/campaigns">View All</Link>
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -202,8 +207,10 @@ export default function BrandDashboard() {
                     <td>{campaign.participants.toLocaleString()}</td>
                     <td>{campaign.conversions}</td>
                     <td>
-                      <Button variant="ghost" size="sm">
-                        <ArrowRight className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href="/brand/campaigns">
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
                       </Button>
                     </td>
                   </tr>
@@ -254,14 +261,20 @@ export default function BrandDashboard() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="secondary" className="w-full justify-start">
-              <Plus className="mr-2 h-4 w-4" /> New Campaign
+            <Button variant="secondary" className="w-full justify-start" asChild>
+              <Link href="/brand/campaigns">
+                <Plus className="mr-2 h-4 w-4" /> New Campaign
+              </Link>
             </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Megaphone className="mr-2 h-4 w-4" /> Manage Rewards
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link href="/brand/rewards">
+                <Megaphone className="mr-2 h-4 w-4" /> Manage Rewards
+              </Link>
             </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <TrendingUp className="mr-2 h-4 w-4" /> View Analytics
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link href="/brand/analytics">
+                <TrendingUp className="mr-2 h-4 w-4" /> View Analytics
+              </Link>
             </Button>
           </CardContent>
         </Card>

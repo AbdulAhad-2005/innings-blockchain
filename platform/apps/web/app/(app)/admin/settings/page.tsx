@@ -23,18 +23,48 @@ interface MeResponse {
 
 export default function AdminSettingsPage() {
   const [user, setUser] = useState(getStoredUser())
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState("")
 
   useEffect(() => {
     const loadProfile = async () => {
       const response = await apiRequest<MeResponse>("/api/auth/me")
       setUser(response.user)
       setStoredUser(response.user)
+      setName(response.user.name)
+      setEmail(response.user.email)
     }
 
     void loadProfile().catch(() => {
       // Keep local storage fallback if API is temporarily unavailable.
+      const fallback = getStoredUser()
+      setName(fallback?.name || "")
+      setEmail(fallback?.email || "")
     })
   }, [])
+
+  const handleSaveProfile = () => {
+    if (!name.trim() || !email.trim()) {
+      setMessage("Name and email are required.")
+      return
+    }
+
+    setSaving(true)
+
+    const nextUser = {
+      id: user?.id || "",
+      name: name.trim(),
+      email: email.trim(),
+      role: "admin" as const,
+    }
+
+    setStoredUser(nextUser)
+    setUser(nextUser)
+    setMessage("Profile details saved locally.")
+    setSaving(false)
+  }
 
   return (
     <div className="space-y-6">
@@ -55,17 +85,28 @@ export default function AdminSettingsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {message && <p className="text-sm text-gray-600">{message}</p>}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Admin Name</Label>
-                    <Input defaultValue={user?.name || ""} className="neo-input" />
+                    <Input
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      className="neo-input"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Email</Label>
-                    <Input defaultValue={user?.email || ""} className="neo-input" />
+                    <Input
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="neo-input"
+                    />
                   </div>
                 </div>
-                <Button variant="secondary">Save Changes</Button>
+                <Button variant="secondary" onClick={handleSaveProfile} disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
               </CardContent>
             </Card>
           </SlideUp>

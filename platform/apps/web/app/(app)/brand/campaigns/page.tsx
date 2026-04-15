@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Megaphone, Plus, MoreVertical } from "lucide-react"
+import { Megaphone, Plus, CircleHelp } from "lucide-react"
 
 interface CampaignItem {
   _id: string
@@ -76,6 +76,38 @@ export default function BrandCampaignsPage() {
     }
   }
 
+  const handleAddQuestion = async (campaignId: string) => {
+    const questionText = window.prompt("Question text")?.trim()
+    const correctAnswer = window.prompt("Correct answer")?.trim()
+    const optionsRaw = window.prompt(
+      "Options (comma separated, include correct answer)",
+      correctAnswer || ""
+    )
+
+    if (!questionText || !correctAnswer) {
+      return
+    }
+
+    const options = (optionsRaw || "")
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+
+    try {
+      setError("")
+      await apiRequest(`/api/brands/quizzes/${campaignId}/questions`, {
+        method: "POST",
+        body: JSON.stringify({
+          questionText,
+          correctAnswer,
+          options,
+        }),
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create question.")
+    }
+  }
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -137,8 +169,12 @@ export default function BrandCampaignsPage() {
                       </td>
                       <td>{(campaign.rewardCount ?? 0).toLocaleString()}</td>
                       <td>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="w-4 h-4" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddQuestion(campaign._id)}
+                        >
+                          <CircleHelp className="mr-1 h-3 w-3" /> Add Question
                         </Button>
                       </td>
                     </tr>

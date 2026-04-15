@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -137,8 +138,10 @@ export default function UserDashboard() {
             </h1>
             <p className="text-gray-600 mt-1">Ready for some cricket action?</p>
           </div>
-          <Button variant="primary" className="w-fit">
-            Play Now <ArrowRight className="ml-2 h-4 w-4" />
+          <Button variant="primary" className="w-fit" asChild>
+            <Link href="/user/matches">
+              Play Now <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </FadeIn>
@@ -178,7 +181,9 @@ export default function UserDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Upcoming Matches</CardTitle>
-              <Button variant="ghost" size="sm">View All</Button>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/user/matches">View All</Link>
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -233,7 +238,9 @@ export default function UserDashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Active Quizzes</CardTitle>
-            <Button variant="primary" size="sm">Join Quiz</Button>
+            <Button variant="primary" size="sm" asChild>
+              <Link href="/user/quizzes">Join Quiz</Link>
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -253,7 +260,9 @@ export default function UserDashboard() {
                   </p>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{quiz.reward}</Badge>
-                    <Button variant="ghost" size="sm">Play</Button>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href="/user/quizzes">Play</Link>
+                    </Button>
                   </div>
                 </div>
               </SlideUp>

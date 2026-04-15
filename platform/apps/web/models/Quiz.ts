@@ -31,6 +31,7 @@ export interface IQuiz extends Document {
   status: QuizStatus
   rewardPoints?: number
   timeLimit?: number
+  metadata?: Record<string, unknown>
   createdAt: Date
   updatedAt: Date
 }
@@ -72,6 +73,7 @@ const QuizSchema = new Schema<IQuiz>(
     },
     rewardPoints: { type: Number, default: 100 },
     timeLimit: { type: Number, default: 60 },
+    metadata: { type: Schema.Types.Mixed },
   },
   { timestamps: true }
 )

@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyBrand } from "@/lib/serverAuth"
 import { connectDB } from "@/lib/db"
-import Match from "@/models/Match"
 import Quiz from "@/models/Quiz"
+import Match from "@/models/Match"
 import {
   buildCampaignMetadataHash,
   createCampaignCommitmentOnChain,
   hasBlockchainSigningConfig,
 } from "@/lib/blockchain"
 
-interface CreateCampaignBody {
+interface CreateQuizBody {
+  title?: string
   matchId: string
-  budget: number
-  rewardCount: number
-  startTime: string
-  endTime: string
-  metadata?: Record<string, unknown>
+  rewardCount?: number
+  rewardPoints?: number
+  budget?: number
+  startTime?: string
+  endTime?: string
+  status?: "draft" | "scheduled" | "active"
 }
 
 export async function GET(request: NextRequest) {
@@ -23,12 +25,12 @@ export async function GET(request: NextRequest) {
     const user = verifyBrand(request)
     await connectDB()
 
-    const campaigns = await Quiz.find({ brandId: user.userId })
+    const quizzes = await Quiz.find({ brandId: user.userId })
       .populate("matchId")
       .sort({ createdAt: -1 })
       .lean()
 
-    return NextResponse.json(campaigns)
+    return NextResponse.json(quizzes)
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unauthorized." },
@@ -42,34 +44,42 @@ export async function POST(request: NextRequest) {
     const user = verifyBrand(request)
     await connectDB()
 
-    const body = (await request.json()) as CreateCampaignBody
+    const body = (await request.json()) as CreateQuizBody
 
     if (!body.matchId) {
       return NextResponse.json({ error: "matchId is required." }, { status: 400 })
     }
 
-    if (!Number.isFinite(body.budget) || body.budget <= 0) {
-      return NextResponse.json({ error: "budget must be a positive number." }, { status: 400 })
+    const match = await Match.findById(body.matchId)
+    if (!match) {
+      return NextResponse.json({ error: "Match not found." }, { status: 404 })
     }
 
-    if (!Number.isFinite(body.rewardCount) || body.rewardCount <= 0) {
-      return NextResponse.json({ error: "rewardCount must be a positive number." }, { status: 400 })
-    }
-
-    const startTime = new Date(body.startTime)
-    const endTime = new Date(body.endTime)
+    const startTime = body.startTime ? new Date(body.startTime) : new Date()
+    const endTime = body.endTime
+      ? new Date(body.endTime)
+      : new Date(startTime.getTime() + 2 * 60 * 60 * 1000)
 
     if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-      return NextResponse.json({ error: "startTime and endTime must be valid dates." }, { status: 400 })
+      return NextResponse.json(
+        { error: "startTime and endTime must be valid dates." },
+        { status: 400 }
+      )
     }
 
     if (endTime <= startTime) {
       return NextResponse.json({ error: "endTime must be after startTime." }, { status: 400 })
     }
 
-    const match = await Match.findById(body.matchId)
-    if (!match) {
-      return NextResponse.json({ error: "Match not found." }, { status: 404 })
+    const rewardCount = Number(body.rewardCount ?? 100)
+    const budget = Number(body.budget ?? rewardCount)
+
+    if (!Number.isFinite(rewardCount) || rewardCount <= 0) {
+      return NextResponse.json({ error: "rewardCount must be a positive number." }, { status: 400 })
+    }
+
+    if (!Number.isFinite(budget) || budget <= 0) {
+      return NextResponse.json({ error: "budget must be a positive number." }, { status: 400 })
     }
 
     let blockchainCampaignId: number | undefined
@@ -81,9 +91,9 @@ export async function POST(request: NextRequest) {
         JSON.stringify({
           brandId: user.userId,
           matchId: body.matchId,
-          budget: body.budget,
-          rewardCount: body.rewardCount,
-          title: body.metadata?.title,
+          title: body.title,
+          rewardCount,
+          budget,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
         })
@@ -92,7 +102,7 @@ export async function POST(request: NextRequest) {
       try {
         const chainResult = await createCampaignCommitmentOnChain({
           brandId: user.userId,
-          rewardCount: Number(body.rewardCount),
+          rewardCount,
           metadataHash,
         })
 
@@ -112,26 +122,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const campaign = await Quiz.create({
-      title: body.metadata?.title || "Campaign",
-      brandId: user.userId,
+    const quiz = await Quiz.create({
+      title: body.title?.trim() || "Match Quiz",
       matchId: body.matchId,
-      budget: Number(body.budget),
-      rewardCount: Number(body.rewardCount),
+      brandId: user.userId,
+      budget,
+      rewardCount,
+      rewardPoints: Number(body.rewardPoints ?? rewardCount),
       startTime,
       endTime,
-      status: "active",
-      rewardPoints: Number(body.rewardCount),
-      metadata: body.metadata,
+      status: body.status || "active",
       blockchainCampaignId,
       commitmentTxHash,
       commitmentProofAddress,
+      questions: [],
     })
 
-    return NextResponse.json(campaign, { status: 201 })
+    return NextResponse.json(quiz, { status: 201 })
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create campaign." },
+      { error: error instanceof Error ? error.message : "Failed to create quiz." },
       { status: 400 }
     )
   }

@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Megaphone, MoreVertical, Plus } from "lucide-react"
+import { Megaphone, Play, CheckCircle2, Flag } from "lucide-react"
 
 interface CampaignItem {
   _id: string
@@ -24,22 +25,44 @@ export default function AdminCampaignsPage() {
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+
+  const loadCampaigns = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await apiRequest<CampaignItem[]>("/api/admin/campaigns")
+      setCampaigns(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load campaigns.")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const loadCampaigns = async () => {
-      try {
-        setLoading(true)
-        const data = await apiRequest<CampaignItem[]>("/api/admin/campaigns")
-        setCampaigns(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load campaigns.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
     void loadCampaigns()
-  }, [])
+  }, [loadCampaigns])
+
+  const updateCampaignStatus = async (
+    campaignId: string,
+    status: "active" | "completed"
+  ) => {
+    try {
+      setUpdatingId(campaignId)
+      setError("")
+
+      await apiRequest(`/api/admin/campaigns/${campaignId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      })
+
+      await loadCampaigns()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update campaign status.")
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -51,8 +74,10 @@ export default function AdminCampaignsPage() {
               All Campaigns
             </h1>
           </div>
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" /> Create Campaign
+          <Button variant="outline" asChild>
+            <Link href="/admin/matches">
+              <Flag className="mr-2 h-4 w-4" /> Set Up Match
+            </Link>
           </Button>
         </div>
       </FadeIn>
@@ -80,7 +105,7 @@ export default function AdminCampaignsPage() {
                     <th>Status</th>
                     <th>Participants</th>
                     <th>Revenue</th>
-                    <th></th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -103,10 +128,29 @@ export default function AdminCampaignsPage() {
                       </td>
                       <td>{(campaign.rewardCount ?? 0).toLocaleString()}</td>
                       <td>${(campaign.budget ?? 0).toLocaleString()}</td>
-                      <td>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
+                      <td className="flex gap-2">
+                        {campaign.status.toLowerCase() !== "active" &&
+                          campaign.status.toLowerCase() !== "completed" && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => updateCampaignStatus(campaign._id, "active")}
+                              disabled={updatingId === campaign._id}
+                            >
+                              <Play className="mr-1 h-3 w-3" /> Start
+                            </Button>
+                          )}
+
+                        {campaign.status.toLowerCase() === "active" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateCampaignStatus(campaign._id, "completed")}
+                            disabled={updatingId === campaign._id}
+                          >
+                            <CheckCircle2 className="mr-1 h-3 w-3" /> Complete
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
