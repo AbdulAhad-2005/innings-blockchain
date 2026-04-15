@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/serverAuth"
 import { connectDB } from "@/lib/db"
 import Reward from "@/models/Reward"
+import RewardRedemption from "@/models/RewardRedemption"
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,14 @@ export async function GET(request: NextRequest) {
       const now = new Date()
       query.startDate = { $lte: now }
       query.expirationDate = { $gte: now }
+
+      const redeemed = await RewardRedemption.find({ userId: user.userId })
+        .select("rewardId")
+        .lean()
+
+      if (redeemed.length > 0) {
+        query._id = { $nin: redeemed.map((item) => item.rewardId) }
+      }
     }
 
     const rewards = await Reward.find(query).sort({ createdAt: -1 }).lean()

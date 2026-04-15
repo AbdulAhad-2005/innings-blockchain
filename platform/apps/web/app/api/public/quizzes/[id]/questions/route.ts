@@ -28,7 +28,6 @@ export async function GET(
       _id: question._id.toString(),
       quizId: question.quizId.toString(),
       questionText: question.questionText,
-      options: question.options,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     }))

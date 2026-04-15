@@ -30,6 +30,21 @@ export async function POST(
       return NextResponse.json({ error: "Reward not found." }, { status: 404 })
     }
 
+    const existingRedemption = await RewardRedemption.findOne({
+      userId: user.userId,
+      rewardId: reward._id,
+    }).lean()
+
+    if (existingRedemption) {
+      return NextResponse.json(
+        {
+          error: "You have already redeemed this reward.",
+          redemption: existingRedemption,
+        },
+        { status: 409 }
+      )
+    }
+
     const now = new Date()
     if (now < reward.startDate || now > reward.expirationDate) {
       return NextResponse.json(
@@ -91,6 +106,9 @@ export async function POST(
     }
 
     return NextResponse.json({
+      message: nft
+        ? "Reward redeemed and NFT minted successfully."
+        : "Reward redeemed successfully.",
       redemption,
       remainingPoints: updatedUser.points,
       nft,

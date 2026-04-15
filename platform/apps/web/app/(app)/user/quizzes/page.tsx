@@ -4,9 +4,10 @@ import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { FadeIn } from "@/components/animations"
 import { apiRequest } from "@/lib/api"
-import { Trophy, Brain, CircleCheck, Sparkles } from "lucide-react"
+import { Trophy, Brain, CircleCheck, Sparkles, SendHorizontal } from "lucide-react"
 
 interface QuizItem {
   _id: string
@@ -20,7 +21,6 @@ interface QuizItem {
 interface QuestionItem {
   _id: string
   questionText: string
-  options: string[]
 }
 
 interface AnswerResponse {
@@ -43,6 +43,7 @@ export default function QuizzesPage() {
   const [questions, setQuestions] = useState<QuestionItem[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [answeringId, setAnsweringId] = useState<string | null>(null)
+  const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({})
   const [answerResults, setAnswerResults] = useState<Record<string, AnswerResponse>>({})
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function QuizzesPage() {
       setError("")
       setActiveQuizId(quizId)
       setAnswerResults({})
+      setAnswerInputs({})
 
       const data = await apiRequest<QuestionItem[]>(`/api/public/quizzes/${quizId}/questions`)
       setQuestions(data)
@@ -77,7 +79,14 @@ export default function QuizzesPage() {
     }
   }
 
-  const submitAnswer = async (questionId: string, answer: string) => {
+  const submitAnswer = async (questionId: string) => {
+    const answer = answerInputs[questionId]?.trim()
+
+    if (!answer) {
+      setError("Please type an answer before submitting.")
+      return
+    }
+
     try {
       setAnsweringId(questionId)
       setError("")
@@ -185,18 +194,26 @@ export default function QuizzesPage() {
                   <div key={question._id} className="neo-card p-4 space-y-4">
                     <p className="font-display font-bold text-lg">{question.questionText}</p>
 
-                    <div className="grid md:grid-cols-2 gap-2">
-                      {question.options.map((option) => (
-                        <Button
-                          key={option}
-                          variant="outline"
-                          disabled={Boolean(result) || answeringId === question._id}
-                          onClick={() => submitAnswer(question._id, option)}
-                          className="justify-start"
-                        >
-                          {option}
-                        </Button>
-                      ))}
+                    <div className="flex flex-col md:flex-row gap-2">
+                      <Input
+                        value={answerInputs[question._id] || ""}
+                        onChange={(event) =>
+                          setAnswerInputs((prev) => ({
+                            ...prev,
+                            [question._id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Type your answer"
+                        disabled={Boolean(result) || answeringId === question._id}
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => submitAnswer(question._id)}
+                        disabled={Boolean(result) || answeringId === question._id}
+                      >
+                        <SendHorizontal className="mr-2 h-4 w-4" />
+                        {answeringId === question._id ? "Submitting..." : "Submit"}
+                      </Button>
                     </div>
 
                     {result && (
@@ -205,7 +222,7 @@ export default function QuizzesPage() {
                           <CircleCheck className="w-4 h-4" />
                           {result.isCorrect
                             ? `Correct! +${result.pointsAwarded} credit`
-                            : "Incorrect answer"}
+                            : "Not correct this time"}
                         </p>
                         <p className="text-xs text-gray-600">
                           Similarity: {(result.similarity * 100).toFixed(1)}% · Total Points: {result.totalPoints}
