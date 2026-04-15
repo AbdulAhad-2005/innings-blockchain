@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #1a1a1a;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+}
+
+:root {
+  --neo-border: 3px;
+  --neo-shadow-offset: 4px;
+  --neo-radius: 0px;
+  --neo-transition-fast: 150ms;
+  --neo-transition-normal: 200ms;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: #000000;
+  }
+
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

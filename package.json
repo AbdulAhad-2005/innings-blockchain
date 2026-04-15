@@ -1,8 +1,12 @@
 {
   "dependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.2",
+    "jsonwebtoken": "^9.0.3",
     "string-similarity": "^4.0.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }
