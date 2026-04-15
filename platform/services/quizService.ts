@@ -69,7 +69,7 @@ export async function getQuizzes(filter: any = {}) {
     .populate("matchId")
     .populate("brandId", "name email");
     
-  return quizzes.map(q => {
+  return quizzes.map((q: { toObject(): any }) => {
     const obj = q.toObject();
     if (obj.adImages) {
       obj.adImages = obj.adImages.map((img: string) => formatImageUrl(img));

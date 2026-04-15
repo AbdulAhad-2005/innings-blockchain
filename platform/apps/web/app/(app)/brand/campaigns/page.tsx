@@ -1,21 +1,80 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
-import { getStoredUser } from "@/lib/auth"
+import { apiRequest } from "@/lib/api"
 import { Megaphone, Plus, MoreVertical } from "lucide-react"
 
-const campaigns = [
-  { name: "PAK vs AUS Special", status: "Active", participants: 2340, type: "Quiz" },
-  { name: "World Cup Predictions", status: "Draft", participants: 0, type: "Prediction" },
-  { name: "Batting Bonanza", status: "Completed", participants: 5600, type: "Quiz" },
-  { name: "Bowling Masterclass", status: "Active", participants: 1200, type: "Quiz" },
-]
+interface CampaignItem {
+  _id: string
+  title?: string
+  status: string
+  rewardCount?: number
+}
+
+interface MatchItem {
+  _id: string
+}
 
 export default function BrandCampaignsPage() {
-  const user = getStoredUser()
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [creating, setCreating] = useState(false)
+
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true)
+      setError("")
+      const data = await apiRequest<CampaignItem[]>("/api/brands/campaigns")
+      setCampaigns(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load campaigns.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadCampaigns()
+  }, [])
+
+  const handleCreateCampaign = async () => {
+    try {
+      setCreating(true)
+
+      const matches = await apiRequest<MatchItem[]>("/api/public/matches")
+      const selectedMatch = matches[0]
+
+      if (!selectedMatch) {
+        throw new Error("No matches available to create a campaign.")
+      }
+
+      const start = new Date()
+      const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+      await apiRequest("/api/brands/campaigns", {
+        method: "POST",
+        body: JSON.stringify({
+          matchId: selectedMatch._id,
+          budget: 1000,
+          rewardCount: 100,
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+          metadata: { title: `Campaign ${start.toLocaleDateString()}` },
+        }),
+      })
+
+      await loadCampaigns()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create campaign.")
+    } finally {
+      setCreating(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -27,11 +86,17 @@ export default function BrandCampaignsPage() {
               Your Campaigns
             </h1>
           </div>
-          <Button variant="secondary">
-            <Plus className="mr-2 h-4 w-4" /> New Campaign
+          <Button variant="secondary" onClick={handleCreateCampaign} disabled={creating}>
+            <Plus className="mr-2 h-4 w-4" /> {creating ? "Creating..." : "New Campaign"}
           </Button>
         </div>
       </FadeIn>
+
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
 
       <SlideUp delay={0.1}>
         <Card className="neo-card">
@@ -54,15 +119,15 @@ export default function BrandCampaignsPage() {
                 </thead>
                 <tbody>
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.name}>
-                      <td className="font-display font-bold">{campaign.name}</td>
-                      <td>{campaign.type}</td>
+                    <tr key={campaign._id}>
+                      <td className="font-display font-bold">{campaign.title || "Campaign"}</td>
+                      <td>Quiz</td>
                       <td>
                         <Badge
                           variant={
-                            campaign.status === "Active"
+                            campaign.status.toLowerCase() === "active"
                               ? "primary"
-                              : campaign.status === "Draft"
+                              : campaign.status.toLowerCase() === "draft"
                               ? "outline"
                               : "secondary"
                           }
@@ -70,7 +135,7 @@ export default function BrandCampaignsPage() {
                           {campaign.status}
                         </Badge>
                       </td>
-                      <td>{campaign.participants.toLocaleString()}</td>
+                      <td>{(campaign.rewardCount ?? 0).toLocaleString()}</td>
                       <td>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="w-4 h-4" />
@@ -78,6 +143,20 @@ export default function BrandCampaignsPage() {
                       </td>
                     </tr>
                   ))}
+                  {!loading && campaigns.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="text-center text-gray-500">
+                        No campaigns found.
+                      </td>
+                    </tr>
+                  )}
+                  {loading && (
+                    <tr>
+                      <td colSpan={5} className="text-center text-gray-500">
+                        Loading campaigns...
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

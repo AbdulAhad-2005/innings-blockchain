@@ -23,11 +23,11 @@ import { useState } from "react"
 import { getStoredUser, clearToken, clearStoredUser, clearStoredRole } from "@/lib/auth"
 
 const navItems = [
-  { href: "/app/user", label: "Home", icon: Home },
-  { href: "/app/user/matches", label: "Matches", icon: Gamepad2 },
-  { href: "/app/user/quizzes", label: "Quizzes", icon: Trophy },
-  { href: "/app/user/rewards", label: "Rewards", icon: Gift },
-  { href: "/app/user/profile", label: "Profile", icon: User },
+  { href: "/user", label: "Home", icon: Home },
+  { href: "/user/matches", label: "Matches", icon: Gamepad2 },
+  { href: "/user/quizzes", label: "Quizzes", icon: Trophy },
+  { href: "/user/rewards", label: "Rewards", icon: Gift },
+  { href: "/user/profile", label: "Profile", icon: User },
 ]
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
@@ -37,12 +37,18 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const user = getStoredUser()
 
   useEffect(() => {
-    if (!user) {
+    if (!user || user.role !== "customer") {
       router.push("/login")
     }
   }, [user, router])
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // Ignore network logout errors and clear local auth state regardless.
+    }
+
     clearToken()
     clearStoredUser()
     clearStoredRole()
@@ -58,7 +64,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 flex-col border-r-[3px] border-black bg-white z-50">
         <div className="p-6 border-b-[3px] border-black">
-          <Link href="/app/user">
+          <Link href="/user">
             <Badge variant="primary" className="text-sm px-4 py-2">
               Innings
             </Badge>
@@ -120,7 +126,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 border-b-[3px] border-black bg-white z-50 flex items-center justify-between px-4">
-        <Link href="/app/user">
+        <Link href="/user">
           <Badge variant="primary" className="text-sm px-3 py-1">
             Innings
           </Badge>

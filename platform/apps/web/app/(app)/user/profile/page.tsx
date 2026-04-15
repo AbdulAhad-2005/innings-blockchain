@@ -1,15 +1,44 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { FadeIn, SlideUp } from "@/components/animations"
-import { getStoredUser } from "@/lib/auth"
+import { getStoredUser, setStoredUser } from "@/lib/auth"
+import { apiRequest } from "@/lib/api"
 import { User, Mail, Shield, Award } from "lucide-react"
 
+interface ProfileUser {
+  id: string
+  name: string
+  email: string
+  role: "customer" | "brand" | "admin"
+  points?: number
+}
+
+interface MeResponse {
+  user: ProfileUser
+}
+
 export default function ProfilePage() {
-  const user = getStoredUser()
+  const [user, setUser] = useState<ProfileUser | null>(getStoredUser())
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await apiRequest<MeResponse>("/api/auth/me")
+        setUser(response.user)
+        setStoredUser(response.user)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load profile.")
+      }
+    }
+
+    void loadProfile()
+  }, [])
 
   const initials = user?.name
     ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
@@ -27,6 +56,8 @@ export default function ProfilePage() {
       <SlideUp delay={0.1}>
         <Card className="neo-card max-w-2xl">
           <CardContent className="pt-6">
+            {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
             <div className="flex items-center gap-6 mb-8">
               <Avatar size="default" className="w-24 h-24 border-[3px] border-black">
                 <AvatarFallback className="bg-[#00b852] text-white text-2xl">
@@ -67,7 +98,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Account Type</p>
-                  <p className="font-display font-bold">Customer</p>
+                  <p className="font-display font-bold">{user?.role || "customer"}</p>
                 </div>
               </div>
 
@@ -77,7 +108,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Points</p>
-                  <p className="font-display font-bold">2,450</p>
+                  <p className="font-display font-bold">{(user?.points ?? 0).toLocaleString()}</p>
                 </div>
               </div>
             </div>

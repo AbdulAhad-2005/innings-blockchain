@@ -18,6 +18,8 @@ const roleFeatures = [
 ]
 
 interface LoginResponse {
+  message?: string
+  error?: string
   token: string
   user: {
     id: string
@@ -56,14 +58,14 @@ export default function LoginPage() {
       const data: LoginResponse = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.user?.email || "Login failed")
+        throw new Error(data.error || data.message || "Login failed")
       }
 
       setToken(data.token)
       setStoredRole(data.user.role)
       setStoredUser(data.user)
       
-      router.push(`/app/${data.user.role === "customer" ? "user" : data.user.role}`)
+      router.push(`/${data.user.role === "customer" ? "user" : data.user.role}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
     } finally {

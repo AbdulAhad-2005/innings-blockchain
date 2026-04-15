@@ -1,25 +1,32 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/animations"
 import { AnimatedContainer } from "@/components/animations"
-import { LayoutDashboard, Users, Building2, Megaphone, Settings, ArrowRight } from "lucide-react"
+import { apiRequest } from "@/lib/api"
+import { LayoutDashboard, Users, Building2, Megaphone, Settings } from "lucide-react"
 
-const stats = [
-  { label: "Total Users", value: "50K+", icon: Users, color: "accent" as const },
-  { label: "Active Brands", value: "24", icon: Building2, color: "secondary" as const },
-  { label: "Campaigns", value: "156", icon: Megaphone, color: "primary" as const },
-  { label: "Platform Health", value: "99.9%", icon: LayoutDashboard, color: "accent" as const },
-]
+interface CustomerItem {
+  _id: string
+  email: string
+  createdAt: string
+}
 
-const recentActivity = [
-  { type: "user", message: "New user registered: john@example.com", time: "2 mins ago" },
-  { type: "brand", message: "Brand 'Nike' created new campaign", time: "15 mins ago" },
-  { type: "campaign", message: "Campaign 'PAK vs AUS' reached 1000 participants", time: "1 hour ago" },
-  { type: "system", message: "Weekly report generated", time: "2 hours ago" },
-]
+interface BrandItem {
+  _id: string
+  name: string
+  verificationStatus?: string
+}
+
+interface CampaignItem {
+  _id: string
+  status: string
+  title?: string
+  createdAt: string
+}
 
 const systemMetrics = [
   { name: "API Response", value: "45ms", status: "healthy" },
@@ -29,6 +36,107 @@ const systemMetrics = [
 ]
 
 export default function AdminDashboard() {
+  const [customers, setCustomers] = useState<CustomerItem[]>([])
+  const [brands, setBrands] = useState<BrandItem[]>([])
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadData = async () => {
+      const results = await Promise.allSettled([
+        apiRequest<CustomerItem[]>("/api/admin/customers"),
+        apiRequest<BrandItem[]>("/api/admin/brands"),
+        apiRequest<CampaignItem[]>("/api/admin/campaigns"),
+      ])
+
+      if (results[0].status === "fulfilled") {
+        setCustomers(results[0].value)
+      }
+
+      if (results[1].status === "fulfilled") {
+        setBrands(results[1].value)
+      }
+
+      if (results[2].status === "fulfilled") {
+        setCampaigns(results[2].value)
+      }
+
+      if (results.some((result) => result.status === "rejected")) {
+        setError("Some admin dashboard data could not be loaded.")
+      }
+    }
+
+    void loadData()
+  }, [])
+
+  const stats = useMemo(() => {
+    const activeBrands = brands.filter((brand) => brand.verificationStatus !== "revoked").length
+    const activeCampaigns = campaigns.filter((campaign) => campaign.status.toLowerCase() === "active").length
+    const health = campaigns.length === 0 ? 100 : Math.max(70, 100 - campaigns.length / 10)
+
+    return [
+      {
+        label: "Total Users",
+        value: customers.length.toLocaleString(),
+        icon: Users,
+        color: "accent" as const,
+      },
+      {
+        label: "Active Brands",
+        value: activeBrands.toString(),
+        icon: Building2,
+        color: "secondary" as const,
+      },
+      {
+        label: "Campaigns",
+        value: campaigns.length.toLocaleString(),
+        icon: Megaphone,
+        color: "primary" as const,
+      },
+      {
+        label: "Platform Health",
+        value: `${health.toFixed(1)}%`,
+        icon: LayoutDashboard,
+        color: "accent" as const,
+      },
+    ]
+  }, [brands, campaigns, customers.length])
+
+  const recentActivity = useMemo(() => {
+    const latestUser = customers[0]
+    const latestBrand = brands[0]
+    const latestCampaign = campaigns[0]
+
+    return [
+      latestUser
+        ? {
+            type: "user" as const,
+            message: `New user registered: ${latestUser.email}`,
+            time: new Date(latestUser.createdAt).toLocaleString(),
+          }
+        : null,
+      latestBrand
+        ? {
+            type: "brand" as const,
+            message: `Brand '${latestBrand.name}' updated profile`,
+            time: "Recently",
+          }
+        : null,
+      latestCampaign
+        ? {
+            type: "campaign" as const,
+            message: `Campaign '${latestCampaign.title || "Campaign"}' status: ${latestCampaign.status}`,
+            time: new Date(latestCampaign.createdAt).toLocaleString(),
+          }
+        : null,
+      {
+        type: "system" as const,
+        message: "System checks completed",
+        time: "Now",
+      },
+    ].filter(Boolean) as Array<{ type: "user" | "brand" | "campaign" | "system"; message: string; time: string }>
+  }, [brands, campaigns, customers])
+
   return (
     <AnimatedContainer className="space-y-8">
       {/* Header */}
@@ -68,6 +176,12 @@ export default function AdminDashboard() {
           )
         })}
       </StaggerChildren>
+
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
 
       {/* Main Content */}
       <div className="grid lg:grid-cols-3 gap-6">

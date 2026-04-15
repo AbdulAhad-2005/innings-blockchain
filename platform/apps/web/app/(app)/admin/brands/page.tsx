@@ -1,19 +1,69 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { Building2, MoreVertical, Plus } from "lucide-react"
 
-const brands = [
-  { name: "Nike Cricket", email: "contact@nike.com", campaigns: 12, status: "Active", joined: "Nov 1, 2025" },
-  { name: "Pepsi", email: "hello@pepsi.com", campaigns: 8, status: "Active", joined: "Dec 15, 2025" },
-  { name: "Samsung", email: "sports@samsung.com", campaigns: 5, status: "Active", joined: "Jan 10, 2026" },
-  { name: "Expired Brand", email: "old@brand.com", campaigns: 2, status: "Expired", joined: "Oct 5, 2025" },
-]
+interface BrandItem {
+  _id: string
+  name: string
+  email: string
+  campaigns?: number
+  verificationStatus?: "unverified" | "verified" | "revoked"
+  createdAt: string
+}
 
 export default function AdminBrandsPage() {
+  const [brands, setBrands] = useState<BrandItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const loadBrands = async () => {
+    try {
+      setLoading(true)
+      const data = await apiRequest<BrandItem[]>("/api/admin/brands")
+      setBrands(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load brands.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadBrands()
+  }, [])
+
+  const handleAddBrand = async () => {
+    const name = window.prompt("Enter brand name")?.trim()
+    const email = window.prompt("Enter brand email")?.trim()
+    const password = window.prompt("Enter temporary password")?.trim()
+
+    if (!name || !email || !password) {
+      return
+    }
+
+    try {
+      await apiRequest("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: "brand",
+        }),
+      })
+
+      await loadBrands()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create brand.")
+    }
+  }
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -24,11 +74,17 @@ export default function AdminBrandsPage() {
               Manage Brands
             </h1>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleAddBrand}>
             <Plus className="mr-2 h-4 w-4" /> Add Brand
           </Button>
         </div>
       </FadeIn>
+
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
 
       <SlideUp delay={0.1}>
         <Card className="neo-card">
@@ -55,13 +111,13 @@ export default function AdminBrandsPage() {
                     <tr key={brand.email}>
                       <td className="font-display font-bold">{brand.name}</td>
                       <td>{brand.email}</td>
-                      <td>{brand.campaigns}</td>
+                      <td>{brand.campaigns ?? 0}</td>
                       <td>
-                        <Badge variant={brand.status === "Active" ? "secondary" : "outline"}>
-                          {brand.status}
+                        <Badge variant={brand.verificationStatus === "verified" ? "secondary" : "outline"}>
+                          {brand.verificationStatus === "verified" ? "Active" : "Pending"}
                         </Badge>
                       </td>
-                      <td>{brand.joined}</td>
+                      <td>{new Date(brand.createdAt).toLocaleDateString()}</td>
                       <td>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="w-4 h-4" />
@@ -69,6 +125,20 @@ export default function AdminBrandsPage() {
                       </td>
                     </tr>
                   ))}
+                  {loading && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-500">
+                        Loading brands...
+                      </td>
+                    </tr>
+                  )}
+                  {!loading && brands.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-500">
+                        No brands found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

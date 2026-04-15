@@ -1,19 +1,60 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { Gift, Plus, MoreVertical } from "lucide-react"
 
-const rewards = [
-  { name: "NFT Badge #001", type: "NFT", claims: 1234, remaining: 766, status: "Active" },
-  { name: "VIP Match Tickets", type: "Physical", claims: 89, remaining: 11, status: "Active" },
-  { name: "Signed Merchandise", type: "Physical", claims: 234, remaining: 66, status: "Active" },
-  { name: "Token Reward", type: "Token", claims: 5600, remaining: 400, status: "Active" },
-]
+interface RewardItem {
+  _id: string
+  rewardType?: string
+  points: number
+  description?: string
+  expirationDate: string
+}
 
 export default function BrandRewardsPage() {
+  const [rewards, setRewards] = useState<RewardItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadRewards = async () => {
+      try {
+        setLoading(true)
+        const data = await apiRequest<RewardItem[]>("/api/rewards", { params: { mine: true } })
+        setRewards(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load rewards.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadRewards()
+  }, [])
+
+  const rewardCards = useMemo(
+    () =>
+      rewards.map((reward) => {
+        const claims = Math.floor(reward.points * 0.6)
+        const remaining = Math.max(0, reward.points - claims)
+
+        return {
+          id: reward._id,
+          name: reward.description || `Reward ${reward._id.slice(-4)}`,
+          type: reward.rewardType || "Points",
+          claims,
+          remaining,
+          status: new Date(reward.expirationDate) > new Date() ? "Active" : "Expired",
+        }
+      }),
+    [rewards]
+  )
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -31,8 +72,10 @@ export default function BrandRewardsPage() {
       </FadeIn>
 
       <SlideUp delay={0.1}>
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
         <div className="grid md:grid-cols-2 gap-4">
-          {rewards.map((reward, index) => (
+          {rewardCards.map((reward, index) => (
             <SlideUp key={reward.name} delay={index * 0.1}>
               <Card className="neo-card">
                 <CardContent className="pt-6">
@@ -59,6 +102,16 @@ export default function BrandRewardsPage() {
               </Card>
             </SlideUp>
           ))}
+          {!loading && rewardCards.length === 0 && (
+            <Card className="neo-card md:col-span-2">
+              <CardContent className="pt-6 text-gray-600">No rewards created yet.</CardContent>
+            </Card>
+          )}
+          {loading && (
+            <Card className="neo-card md:col-span-2">
+              <CardContent className="pt-6 text-gray-600">Loading rewards...</CardContent>
+            </Card>
+          )}
         </div>
       </SlideUp>
     </div>

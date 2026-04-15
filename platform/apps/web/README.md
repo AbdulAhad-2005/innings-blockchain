@@ -10,9 +10,9 @@ The unified Next.js frontend for the Innings Blockchain platform. This single ap
 /                    → Landing page (public)
 /login               → Unified login (select role)
 /signup              → Unified signup (select role)
-/app/user/*          → Customer dashboard (matches, quizzes, rewards, profile)
-/app/brand/*         → Brand dashboard (campaigns, analytics, rewards, settings)
-/app/admin/*         → Admin panel (users, brands, campaigns, settings)
+/user/*              → Customer dashboard (matches, quizzes, rewards, profile)
+/brand/*             → Brand dashboard (campaigns, analytics, rewards, settings)
+/admin/*             → Admin panel (users, brands, campaigns, settings)
 ```
 
 ### Technology Stack
@@ -89,7 +89,7 @@ All shadcn components styled with neobrutalism:
 
 | Variable | Description |
 |----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
+| `MONGODB_URI` or `MONGODB_URL` | MongoDB connection string |
 | `JWT_SECRET` | Secret for JWT tokens |
 | `BLOCKCHAIN_RPC_URL` | Blockchain RPC (optional) |
 | `CONTRACT_ADDRESS` | Smart contract (optional) |

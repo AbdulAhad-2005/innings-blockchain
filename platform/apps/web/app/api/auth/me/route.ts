@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import jwt from "jsonwebtoken"
 import { connectDB } from "@/lib/db"
+import { verifyToken, type UserRole } from "@/lib/serverAuth"
 import CustomerUser from "@/models/CustomerUser"
 import BrandUser from "@/models/BrandUser"
 import AdminUser from "@/models/AdminUser"
-
-type UserRole = "customer" | "brand" | "admin"
 
 function getModelForRole(role: UserRole) {
   switch (role) {
@@ -22,28 +20,7 @@ function getModelForRole(role: UserRole) {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("innings_token")?.value
-
-    if (!token) {
-      return NextResponse.json(
-        { message: "Not authenticated" },
-        { status: 401 }
-      )
-    }
-
-    if (!process.env.JWT_SECRET) {
-      return NextResponse.json(
-        { message: "Server configuration error" },
-        { status: 500 }
-      )
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as {
-      userId: string
-      email: string
-      name: string
-      role: UserRole
-    }
+    const decoded = verifyToken(request)
 
     await connectDB()
 
@@ -52,21 +29,24 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "User not found" },
+        { error: "User not found." },
         { status: 404 }
       )
     }
 
     return NextResponse.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: decoded.role,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: decoded.role,
+        ...(decoded.role === "customer" ? { points: (user as { points?: number }).points ?? 0 } : {}),
+      },
     })
   } catch (error) {
     console.error("Auth check error:", error)
     return NextResponse.json(
-      { message: "Invalid token" },
+      { error: error instanceof Error ? error.message : "Invalid token." },
       { status: 401 }
     )
   }

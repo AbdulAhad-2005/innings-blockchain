@@ -1,14 +1,47 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
-import { getStoredUser } from "@/lib/auth"
+import { getStoredUser, setStoredUser } from "@/lib/auth"
+import { apiRequest } from "@/lib/api"
 import { Building2, Mail, Megaphone, Settings } from "lucide-react"
 
+interface MeResponse {
+  user: {
+    id: string
+    name: string
+    email: string
+    role: "customer" | "brand" | "admin"
+  }
+}
+
+interface CampaignItem {
+  _id: string
+}
+
 export default function BrandSettingsPage() {
-  const user = getStoredUser()
+  const [user, setUser] = useState(getStoredUser())
+  const [campaignCount, setCampaignCount] = useState(0)
+  const [apiStatus, setApiStatus] = useState("Checking")
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const profile = await apiRequest<MeResponse>("/api/auth/me")
+      setUser(profile.user)
+      setStoredUser(profile.user)
+
+      const campaigns = await apiRequest<CampaignItem[]>("/api/brands/campaigns")
+      setCampaignCount(campaigns.length)
+      setApiStatus("Active")
+    }
+
+    void loadSettings().catch(() => {
+      setApiStatus("Unavailable")
+    })
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -49,7 +82,7 @@ export default function BrandSettingsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Active Campaigns</p>
-                  <p className="font-display font-bold">8</p>
+                  <p className="font-display font-bold">{campaignCount}</p>
                 </div>
               </div>
 
@@ -59,7 +92,7 @@ export default function BrandSettingsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">API Status</p>
-                  <p className="font-display font-bold">Active</p>
+                  <p className="font-display font-bold">{apiStatus}</p>
                 </div>
               </div>
             </div>

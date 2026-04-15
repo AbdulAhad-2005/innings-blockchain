@@ -18,6 +18,8 @@ const roleFeatures = [
 ]
 
 interface RegisterResponse {
+  message?: string
+  error?: string
   token: string
   user: {
     id: string
@@ -34,6 +36,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [walletAddress, setWalletAddress] = useState("")
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
@@ -56,26 +59,42 @@ export default function SignupPage() {
       return
     }
 
+    if (selectedRole === "customer" && !walletAddress.trim()) {
+      setError("Wallet address is required for customer accounts.")
+      return
+    }
+
     try {
       setSubmitting(true)
+
+      const payload: Record<string, string> = {
+        name,
+        email,
+        password,
+        role: selectedRole,
+      }
+
+      if (selectedRole === "customer") {
+        payload.walletAddress = walletAddress.trim()
+      }
       
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: selectedRole }),
+        body: JSON.stringify(payload),
       })
 
       const data: RegisterResponse = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.user?.email || "Registration failed")
+        throw new Error(data.error || data.message || "Registration failed")
       }
 
       setToken(data.token)
       setStoredRole(data.user.role)
       setStoredUser(data.user)
       
-      router.push(`/app/${data.user.role === "customer" ? "user" : data.user.role}`)
+      router.push(`/${data.user.role === "customer" ? "user" : data.user.role}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")
     } finally {
@@ -183,6 +202,20 @@ export default function SignupPage() {
                     />
                   </div>
                 </div>
+
+                {selectedRole === "customer" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="walletAddress">Wallet Address</Label>
+                    <Input
+                      id="walletAddress"
+                      type="text"
+                      placeholder="0x..."
+                      value={walletAddress}
+                      onChange={(e) => setWalletAddress(e.target.value)}
+                      className="neo-input"
+                    />
+                  </div>
+                )}
 
                 {error && (
                   <div className="neo-card p-4 bg-red-50 border-red-500">

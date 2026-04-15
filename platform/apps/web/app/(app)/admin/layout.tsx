@@ -23,11 +23,11 @@ import { useState } from "react"
 import { getStoredUser, clearToken, clearStoredUser, clearStoredRole } from "@/lib/auth"
 
 const navItems = [
-  { href: "/app/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/app/admin/users", label: "Users", icon: Users },
-  { href: "/app/admin/brands", label: "Brands", icon: Building2 },
-  { href: "/app/admin/campaigns", label: "Campaigns", icon: Megaphone },
-  { href: "/app/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/brands", label: "Brands", icon: Building2 },
+  { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,12 +37,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const user = getStoredUser()
 
   useEffect(() => {
-    if (!user) {
+    if (!user || user.role !== "admin") {
       router.push("/login")
     }
   }, [user, router])
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // Ignore network logout errors and clear local auth state regardless.
+    }
+
     clearToken()
     clearStoredUser()
     clearStoredRole()
@@ -58,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 flex-col border-r-[3px] border-black bg-white z-50">
         <div className="p-6 border-b-[3px] border-black">
-          <Link href="/app/admin">
+          <Link href="/admin">
             <Badge variant="accent" className="text-sm px-4 py-2">
               Innings Admin
             </Badge>
@@ -120,7 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 border-b-[3px] border-black bg-white z-50 flex items-center justify-between px-4">
-        <Link href="/app/admin">
+        <Link href="/admin">
           <Badge variant="accent" className="text-sm px-3 py-1 text-black">
             Innings Admin
           </Badge>

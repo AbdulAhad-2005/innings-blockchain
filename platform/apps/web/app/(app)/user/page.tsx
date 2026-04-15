@@ -1,31 +1,40 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/animations"
 import { AnimatedContainer } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { Zap, Trophy, Gift, ArrowRight, TrendingUp } from "lucide-react"
 
-const quickStats = [
-  { label: "Points", value: "2,450", icon: Zap, color: "primary" as const },
-  { label: "Badges", value: "12", icon: Trophy, color: "accent" as const },
-  { label: "Rewards", value: "8", icon: Gift, color: "secondary" as const },
-  { label: "Streak", value: "5 days", icon: TrendingUp, color: "primary" as const },
-]
+interface MatchItem {
+  _id: string
+  teamA: { name: string; shortName: string }
+  teamB: { name: string; shortName: string }
+  startTime: string
+  status: string
+}
 
-const upcomingMatches = [
-  { teams: "PAK vs AUS", time: "Today, 7:00 PM", status: "Live" },
-  { teams: "IND vs ENG", time: "Tomorrow, 3:00 PM", status: "Upcoming" },
-  { teams: "SA vs NZ", time: "Mar 18, 5:30 PM", status: "Upcoming" },
-]
+interface QuizItem {
+  _id: string
+  title: string
+  questionCount: number
+  rewardPoints: number
+  status: string
+}
 
-const activeQuizzes = [
-  { title: "PAK vs AUS Quarter Finals", questions: 10, reward: "500 pts", status: "Live" },
-  { title: "Bowling Mastery", questions: 15, reward: "750 pts", status: "Starting Soon" },
-  { title: "Batting Legends", questions: 12, reward: "600 pts", status: "Live" },
-]
+interface RewardItem {
+  _id: string
+}
+
+interface MeResponse {
+  user: {
+    points?: number
+  }
+}
 
 const rewardTiers = [
   { name: "Bronze Fan", progress: 75, next: "Silver Star" },
@@ -34,6 +43,88 @@ const rewardTiers = [
 ]
 
 export default function UserDashboard() {
+  const [matches, setMatches] = useState<MatchItem[]>([])
+  const [quizzes, setQuizzes] = useState<QuizItem[]>([])
+  const [rewards, setRewards] = useState<RewardItem[]>([])
+  const [points, setPoints] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      setLoading(true)
+      setError("")
+
+      const results = await Promise.allSettled([
+        apiRequest<MatchItem[]>("/api/public/matches"),
+        apiRequest<QuizItem[]>("/api/public/quizzes"),
+        apiRequest<RewardItem[]>("/api/rewards"),
+        apiRequest<MeResponse>("/api/auth/me"),
+      ])
+
+      if (results[0].status === "fulfilled") {
+        setMatches(results[0].value)
+      }
+
+      if (results[1].status === "fulfilled") {
+        setQuizzes(results[1].value)
+      }
+
+      if (results[2].status === "fulfilled") {
+        setRewards(results[2].value)
+      }
+
+      if (results[3].status === "fulfilled") {
+        setPoints(results[3].value.user.points ?? 0)
+      }
+
+      const failures = results.filter((entry) => entry.status === "rejected")
+      if (failures.length > 0) {
+        setError("Some dashboard data could not be loaded.")
+      }
+
+      setLoading(false)
+    }
+
+    void loadDashboard()
+  }, [])
+
+  const quickStats = useMemo(
+    () => [
+      { label: "Points", value: points.toLocaleString(), icon: Zap, color: "primary" as const },
+      { label: "Badges", value: rewards.length.toString(), icon: Trophy, color: "accent" as const },
+      { label: "Rewards", value: rewards.length.toString(), icon: Gift, color: "secondary" as const },
+      {
+        label: "Streak",
+        value: `${matches.filter((match) => match.status.toLowerCase() === "live").length} live`,
+        icon: TrendingUp,
+        color: "primary" as const,
+      },
+    ],
+    [matches, points, rewards.length]
+  )
+
+  const upcomingMatches = useMemo(
+    () =>
+      matches.slice(0, 3).map((match) => ({
+        teams: `${match.teamA.shortName} vs ${match.teamB.shortName}`,
+        time: new Date(match.startTime).toLocaleString(),
+        status: match.status.toLowerCase() === "live" ? "Live" : "Upcoming",
+      })),
+    [matches]
+  )
+
+  const activeQuizzes = useMemo(
+    () =>
+      quizzes.slice(0, 3).map((quiz) => ({
+        title: quiz.title,
+        questions: quiz.questionCount,
+        reward: `${quiz.rewardPoints} pts`,
+        status: quiz.status.toLowerCase() === "active" ? "Live" : "Starting Soon",
+      })),
+    [quizzes]
+  )
+
   return (
     <AnimatedContainer className="space-y-8">
       {/* Header */}
@@ -74,6 +165,12 @@ export default function UserDashboard() {
         })}
       </StaggerChildren>
 
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Upcoming Matches */}
@@ -86,7 +183,7 @@ export default function UserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingMatches.map((match, index) => (
+              {(loading ? [] : upcomingMatches).map((match, index) => (
                 <SlideUp key={match.teams} delay={index * 0.1}>
                   <div className="neo-card p-4 flex items-center justify-between">
                     <div>
@@ -102,6 +199,9 @@ export default function UserDashboard() {
                   </div>
                 </SlideUp>
               ))}
+              {!loading && upcomingMatches.length === 0 && (
+                <div className="neo-card p-4 text-sm text-gray-600">No matches available yet.</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -138,7 +238,7 @@ export default function UserDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-4">
-            {activeQuizzes.map((quiz, index) => (
+            {(loading ? [] : activeQuizzes).map((quiz, index) => (
               <SlideUp key={quiz.title} delay={index * 0.1}>
                 <div className="neo-card p-5 h-full flex flex-col">
                   <Badge
@@ -158,6 +258,11 @@ export default function UserDashboard() {
                 </div>
               </SlideUp>
             ))}
+            {!loading && activeQuizzes.length === 0 && (
+              <div className="neo-card p-5 md:col-span-3 text-gray-600">
+                No quizzes are currently available.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

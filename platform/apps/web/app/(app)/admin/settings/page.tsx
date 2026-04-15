@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,11 +8,33 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { FadeIn, SlideUp } from "@/components/animations"
-import { getStoredUser } from "@/lib/auth"
+import { getStoredUser, setStoredUser } from "@/lib/auth"
+import { apiRequest } from "@/lib/api"
 import { Settings, Shield, Bell, Database } from "lucide-react"
 
+interface MeResponse {
+  user: {
+    id: string
+    name: string
+    email: string
+    role: "customer" | "brand" | "admin"
+  }
+}
+
 export default function AdminSettingsPage() {
-  const user = getStoredUser()
+  const [user, setUser] = useState(getStoredUser())
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const response = await apiRequest<MeResponse>("/api/auth/me")
+      setUser(response.user)
+      setStoredUser(response.user)
+    }
+
+    void loadProfile().catch(() => {
+      // Keep local storage fallback if API is temporarily unavailable.
+    })
+  }, [])
 
   return (
     <div className="space-y-6">

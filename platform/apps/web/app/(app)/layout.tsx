@@ -7,13 +7,13 @@ type UserRole = "customer" | "brand" | "admin"
 function getDashboardPath(role: UserRole): string {
   switch (role) {
     case "customer":
-      return "/app/user"
+      return "/user"
     case "brand":
-      return "/app/brand"
+      return "/brand"
     case "admin":
-      return "/app/admin"
+      return "/admin"
     default:
-      return "/app/user"
+      return "/user"
   }
 }
 
@@ -34,7 +34,7 @@ export default async function AppLayout({
       throw new Error("JWT_SECRET not configured")
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as {
+    jwt.verify(token, process.env.JWT_SECRET) as {
       role: UserRole
     }
 

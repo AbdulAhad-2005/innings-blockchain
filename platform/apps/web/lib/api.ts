@@ -38,14 +38,24 @@ async function request<T>(
     },
   })
 
+  const contentType = response.headers.get("content-type") || ""
+  const isJson = contentType.includes("application/json")
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    const message = errorData.message || `Request failed with status ${response.status}`
+    const errorData = isJson ? await response.json().catch(() => ({})) : {}
+    const message =
+      errorData.error ||
+      errorData.message ||
+      `Request failed with status ${response.status}`
     throw new Error(message)
   }
 
   if (response.status === 204) {
     return undefined as T
+  }
+
+  if (!isJson) {
+    return (await response.text()) as T
   }
 
   return response.json()

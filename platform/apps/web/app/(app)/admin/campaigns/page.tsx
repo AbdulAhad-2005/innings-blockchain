@@ -1,19 +1,46 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { Megaphone, MoreVertical, Plus } from "lucide-react"
 
-const campaigns = [
-  { name: "PAK vs AUS Special", brand: "Nike", status: "Active", participants: 2340, revenue: "$12.5K" },
-  { name: "World Cup Predictions", brand: "Pepsi", status: "Draft", participants: 0, revenue: "$0" },
-  { name: "Batting Bonanza", brand: "Samsung", status: "Completed", participants: 5600, revenue: "$8.2K" },
-  { name: "Bowling Masterclass", brand: "Nike", status: "Active", participants: 1200, revenue: "$3.8K" },
-]
+interface CampaignItem {
+  _id: string
+  title?: string
+  status: string
+  rewardCount?: number
+  budget?: number
+  brandId?: {
+    name?: string
+    email?: string
+  }
+}
 
 export default function AdminCampaignsPage() {
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        setLoading(true)
+        const data = await apiRequest<CampaignItem[]>("/api/admin/campaigns")
+        setCampaigns(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load campaigns.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadCampaigns()
+  }, [])
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -29,6 +56,12 @@ export default function AdminCampaignsPage() {
           </Button>
         </div>
       </FadeIn>
+
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
 
       <SlideUp delay={0.1}>
         <Card className="neo-card">
@@ -52,15 +85,15 @@ export default function AdminCampaignsPage() {
                 </thead>
                 <tbody>
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.name}>
-                      <td className="font-display font-bold">{campaign.name}</td>
-                      <td>{campaign.brand}</td>
+                    <tr key={campaign._id}>
+                      <td className="font-display font-bold">{campaign.title || "Campaign"}</td>
+                      <td>{campaign.brandId?.name || "Brand"}</td>
                       <td>
                         <Badge
                           variant={
-                            campaign.status === "Active"
+                            campaign.status.toLowerCase() === "active"
                               ? "primary"
-                              : campaign.status === "Draft"
+                              : campaign.status.toLowerCase() === "draft"
                               ? "outline"
                               : "secondary"
                           }
@@ -68,8 +101,8 @@ export default function AdminCampaignsPage() {
                           {campaign.status}
                         </Badge>
                       </td>
-                      <td>{campaign.participants.toLocaleString()}</td>
-                      <td>{campaign.revenue}</td>
+                      <td>{(campaign.rewardCount ?? 0).toLocaleString()}</td>
+                      <td>${(campaign.budget ?? 0).toLocaleString()}</td>
                       <td>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="w-4 h-4" />
@@ -77,6 +110,20 @@ export default function AdminCampaignsPage() {
                       </td>
                     </tr>
                   ))}
+                  {loading && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-500">
+                        Loading campaigns...
+                      </td>
+                    </tr>
+                  )}
+                  {!loading && campaigns.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-500">
+                        No campaigns found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

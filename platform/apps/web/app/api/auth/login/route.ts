@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password || !role) {
       return NextResponse.json(
-        { message: "Email, password, and role are required" },
+        { error: "email, password, and role are required." },
         { status: 400 }
       )
     }
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "Invalid email or password" },
+        { error: "Invalid email or password." },
         { status: 401 }
       )
     }
@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
       return NextResponse.json(
-        { message: "Invalid email or password" },
+        { error: "Invalid email or password." },
         { status: 401 }
       )
     }
 
     if (!process.env.JWT_SECRET) {
       return NextResponse.json(
-        { message: "Server configuration error" },
+        { error: "Server configuration error." },
         { status: 500 }
       )
     }
@@ -70,15 +70,19 @@ export async function POST(request: NextRequest) {
       expiresIn: "7d",
     })
 
-    const response = NextResponse.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role,
+    const response = NextResponse.json(
+      {
+        message: "Login successful.",
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role,
+        },
       },
-    })
+      { status: 200 }
+    )
 
     response.cookies.set("innings_token", token, {
       httpOnly: true,
@@ -92,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Login error:", error)
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error." },
       { status: 500 }
     )
   }

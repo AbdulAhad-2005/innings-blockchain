@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --filter @innings/web dev",
     "build": "pnpm --filter @innings/web build",
+    "start": "pnpm --filter @innings/web start",
     "lint": "pnpm --filter @innings/web lint",
     "clean": "rm -rf apps/*/node_modules packages/*/node_modules node_modules"
   },

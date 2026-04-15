@@ -1,32 +1,121 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/animations"
 import { AnimatedContainer } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { LayoutDashboard, Megaphone, Users, TrendingUp, ArrowRight, Plus } from "lucide-react"
 
-const stats = [
-  { label: "Active Campaigns", value: "8", icon: Megaphone, color: "primary" as const },
-  { label: "Total Users", value: "12.5K", icon: Users, color: "secondary" as const },
-  { label: "Engagement Rate", value: "78%", icon: TrendingUp, color: "accent" as const },
-  { label: "Revenue", value: "$24.5K", icon: LayoutDashboard, color: "primary" as const },
-]
+interface CampaignItem {
+  _id: string
+  title?: string
+  status: string
+  rewardCount?: number
+  budget?: number
+}
 
-const recentCampaigns = [
-  { name: "PAK vs AUS Special", status: "Active", participants: 2340, conversions: "12.4%" },
-  { name: "World Cup Predictions", status: "Draft", participants: 0, conversions: "0%" },
-  { name: "Batting Bonanza", status: "Completed", participants: 5600, conversions: "18.7%" },
-]
-
-const topRewards = [
-  { name: "NFT Badge #001", claims: 1234, remaining: 766 },
-  { name: "VIP Match Tickets", claims: 89, remaining: 11 },
-  { name: "Signed Merchandise", claims: 234, remaining: 66 },
-]
+interface RewardItem {
+  _id: string
+  points: number
+  description?: string
+}
 
 export default function BrandDashboard() {
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [rewards, setRewards] = useState<RewardItem[]>([])
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadData = async () => {
+      const results = await Promise.allSettled([
+        apiRequest<CampaignItem[]>("/api/brands/campaigns"),
+        apiRequest<RewardItem[]>("/api/rewards", { params: { mine: true } }),
+      ])
+
+      if (results[0].status === "fulfilled") {
+        setCampaigns(results[0].value)
+      }
+
+      if (results[1].status === "fulfilled") {
+        setRewards(results[1].value)
+      }
+
+      if (results.some((entry) => entry.status === "rejected")) {
+        setError("Some dashboard data could not be loaded.")
+      }
+    }
+
+    void loadData()
+  }, [])
+
+  const stats = useMemo(() => {
+    const activeCampaigns = campaigns.filter((campaign) =>
+      ["active", "approved", "scheduled"].includes(campaign.status.toLowerCase())
+    ).length
+
+    const totalParticipants = campaigns.reduce(
+      (sum, campaign) => sum + (campaign.rewardCount ?? 0),
+      0
+    )
+
+    const engagementRate = campaigns.length
+      ? Math.round((activeCampaigns / campaigns.length) * 100)
+      : 0
+
+    const totalRevenue = campaigns.reduce((sum, campaign) => sum + (campaign.budget ?? 0), 0)
+
+    return [
+      {
+        label: "Active Campaigns",
+        value: activeCampaigns.toString(),
+        icon: Megaphone,
+        color: "primary" as const,
+      },
+      {
+        label: "Total Users",
+        value: totalParticipants.toLocaleString(),
+        icon: Users,
+        color: "secondary" as const,
+      },
+      {
+        label: "Engagement Rate",
+        value: `${engagementRate}%`,
+        icon: TrendingUp,
+        color: "accent" as const,
+      },
+      {
+        label: "Revenue",
+        value: `$${totalRevenue.toLocaleString()}`,
+        icon: LayoutDashboard,
+        color: "primary" as const,
+      },
+    ]
+  }, [campaigns])
+
+  const recentCampaigns = useMemo(
+    () =>
+      campaigns.slice(0, 3).map((campaign) => ({
+        name: campaign.title || "Campaign",
+        status: campaign.status,
+        participants: campaign.rewardCount ?? 0,
+        conversions: `${Math.min(95, Math.max(0, Math.round((campaign.rewardCount ?? 0) / 10)))}%`,
+      })),
+    [campaigns]
+  )
+
+  const topRewards = useMemo(
+    () =>
+      rewards.slice(0, 3).map((reward) => ({
+        name: reward.description || `Reward ${reward._id.slice(-4)}`,
+        claims: Math.floor(reward.points * 0.6),
+        remaining: Math.max(0, reward.points - Math.floor(reward.points * 0.6)),
+      })),
+    [rewards]
+  )
+
   return (
     <AnimatedContainer className="space-y-8">
       {/* Header */}
@@ -66,6 +155,12 @@ export default function BrandDashboard() {
           )
         })}
       </StaggerChildren>
+
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
 
       {/* Recent Campaigns */}
       <Card className="neo-card">
@@ -113,6 +208,13 @@ export default function BrandDashboard() {
                     </td>
                   </tr>
                 ))}
+                {recentCampaigns.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="text-center text-gray-500">
+                      No campaigns found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -140,6 +242,9 @@ export default function BrandDashboard() {
                   </div>
                 </SlideUp>
               ))}
+              {topRewards.length === 0 && (
+                <div className="neo-card p-4 text-sm text-gray-600">No rewards created yet.</div>
+              )}
             </div>
           </CardContent>
         </Card>

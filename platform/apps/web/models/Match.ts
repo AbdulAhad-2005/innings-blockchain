@@ -1,11 +1,12 @@
 import { Schema, model, models, type Document } from "mongoose"
 
 export interface IMatch extends Document {
-  teamA: { name: string; shortName: string; logo?: string }
-  teamB: { name: string; shortName: string; logo?: string }
+  teamA: unknown
+  teamB: unknown
   startTime: Date
+  endTime?: Date
   status: "scheduled" | "live" | "completed"
-  venue: string
+  venue?: string
   score?: { teamA: number; teamB: number }
   createdAt: Date
   updatedAt: Date
@@ -13,23 +14,17 @@ export interface IMatch extends Document {
 
 const MatchSchema = new Schema<IMatch>(
   {
-    teamA: {
-      name: { type: String, required: true },
-      shortName: { type: String, required: true },
-      logo: String,
-    },
-    teamB: {
-      name: { type: String, required: true },
-      shortName: { type: String, required: true },
-      logo: String,
-    },
+    // Support both object-id refs and embedded team objects.
+    teamA: { type: Schema.Types.Mixed, required: true },
+    teamB: { type: Schema.Types.Mixed, required: true },
     startTime: { type: Date, required: true },
+    endTime: { type: Date },
     status: {
       type: String,
       enum: ["scheduled", "live", "completed"],
       default: "scheduled",
     },
-    venue: { type: String, required: true },
+    venue: { type: String },
     score: {
       teamA: Number,
       teamB: Number,

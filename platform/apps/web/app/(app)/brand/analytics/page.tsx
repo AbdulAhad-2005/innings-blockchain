@@ -1,17 +1,53 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FadeIn } from "@/components/animations"
+import { apiRequest } from "@/lib/api"
 import { BarChart3, TrendingUp, Users, Target } from "lucide-react"
 
-const metrics = [
-  { label: "Total Engagement", value: "78%", icon: TrendingUp, change: "+12%" },
-  { label: "Active Users", value: "12.5K", icon: Users, change: "+8%" },
-  { label: "Conversion Rate", value: "15.4%", icon: Target, change: "+3%" },
-]
+interface CampaignItem {
+  _id: string
+  status: string
+  rewardCount?: number
+}
 
 export default function BrandAnalyticsPage() {
+  const [campaigns, setCampaigns] = useState<CampaignItem[]>([])
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        const data = await apiRequest<CampaignItem[]>("/api/brands/campaigns")
+        setCampaigns(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load analytics.")
+      }
+    }
+
+    void loadCampaigns()
+  }, [])
+
+  const metrics = useMemo(() => {
+    const total = campaigns.length
+    const active = campaigns.filter((campaign) =>
+      ["active", "approved", "scheduled"].includes(campaign.status.toLowerCase())
+    ).length
+    const completed = campaigns.filter((campaign) => campaign.status.toLowerCase() === "completed").length
+    const participants = campaigns.reduce((sum, campaign) => sum + (campaign.rewardCount ?? 0), 0)
+
+    const engagement = total ? Math.round((active / total) * 100) : 0
+    const conversion = total ? Math.round((completed / total) * 100) : 0
+
+    return [
+      { label: "Total Engagement", value: `${engagement}%`, icon: TrendingUp, change: `${active} active` },
+      { label: "Active Users", value: participants.toLocaleString(), icon: Users, change: `${total} campaigns` },
+      { label: "Conversion Rate", value: `${conversion}%`, icon: Target, change: `${completed} completed` },
+    ]
+  }, [campaigns])
+
   return (
     <div className="space-y-6">
       <FadeIn direction="up">
@@ -42,6 +78,12 @@ export default function BrandAnalyticsPage() {
         })}
       </div>
 
+      {error && (
+        <Card className="neo-card border-red-500">
+          <CardContent className="pt-6 text-red-600">{error}</CardContent>
+        </Card>
+      )}
+
       <FadeIn direction="up" delay={0.3}>
         <Card className="neo-card">
           <CardHeader>
@@ -54,7 +96,7 @@ export default function BrandAnalyticsPage() {
               <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="font-display text-xl font-bold mb-2">Chart Visualization</h3>
               <p className="text-gray-600">
-                Integrate with Recharts or similar library for interactive charts.
+                Campaign trend charts can be plugged in directly once historical snapshots are available.
               </p>
             </div>
           </CardContent>

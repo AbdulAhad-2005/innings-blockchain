@@ -73,12 +73,12 @@ export function isRole(role: UserRole): boolean {
 export function getDashboardPath(role: UserRole): string {
   switch (role) {
     case "customer":
-      return "/app/user"
+      return "/user"
     case "brand":
-      return "/app/brand"
+      return "/brand"
     case "admin":
-      return "/app/admin"
+      return "/admin"
     default:
-      return "/app/user"
+      return "/user"
   }
 }
