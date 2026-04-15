@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: "/home/waleed/Desktop/innings-blockchain/platform",
-  },
+  output: "standalone",
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
